@@ -19,7 +19,7 @@ def is_wip(event):
     wip = False
     labels = []
     for label in event.data['pull_request']['labels']:
-        name = label.encode('utf-16', 'surrogatepass').decode('utf-16').lower()
+        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
         if name in ('wip', 'work in progress', 'work-in-progress'):
             wip = True
     return wip
