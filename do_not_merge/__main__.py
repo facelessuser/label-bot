@@ -13,14 +13,46 @@ router = routing.Router()
 routes = web.RouteTableDef()
 
 
+def is_wip(event):
+    """Is work in progress."""
+
+    wip = False
+    labels = []
+    for label in event.data['pull_request']['labels']:
+        name = label.encode('utf-16', 'surrogatepass').decode('utf-16').lower()
+        if name in ('wip', 'work in progress', 'work-in-progress'):
+            wip = True
+    return wip
+
+
 @router.register("pull_request", action="labeled")
 async def pull_labeled(event, gh, *args, **kwargs):
-    print(json.dumps(event.data))
+
+    wip = is_wip(event)
+    await gh.post(
+        event.data['pull_request']['statuses_url'],
+        data={
+          "state": "pending" if wip else "success",
+          "target_url": "https://github.com/isaac-muse/do-not-merge",
+          "description": "Work in progress" if wip else "Ready for review",
+          "context": "wip"
+        }
+    )
 
 
 @router.register("pull_request", action="unlabeled")
 async def pull_unlabeled(event, gh, *args, **kwargs):
-    print(json.dumps(event.data))
+
+    wip = is_wip(event)
+    await gh.post(
+        event.data['pull_request']['statuses_url'],
+        data={
+          "state": "pending" if wip else "success",
+          "target_url": "https://github.com/isaac-muse/do-not-merge",
+          "description": "Work in progress" if wip else "Ready for review",
+          "context": "wip"
+        }
+    )
 
 
 @routes.post("/")
