@@ -6,6 +6,7 @@ from gidgethub import aiohttp as gh_aiohttp
 import json
 import traceback
 
+router = routing.Router()
 routes = web.RouteTableDef()
 
 
