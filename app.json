@@ -1,0 +1,27 @@
+{
+  "addons": [
+
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "GH_AUTH": {
+      "required": true
+    },
+    "GH_SECRET": {
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "name": "label-bot",
+  "scripts": {
+  },
+  "stack": "heroku-18"
+}
