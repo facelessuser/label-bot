@@ -1,6 +1,6 @@
 """Wildcard labels."""
 from wcmatch import glob
-from gidgethub import routing, sansio
+from gidgethub import sansio
 
 
 async def get_flags(config):
@@ -43,7 +43,7 @@ async def get_changed_files(event, gh, files):
 
 
 async def get_labels(files, flags):
-        """Sync labels."""
+    """Sync labels."""
 
     add_labels = {}
     for file in files:

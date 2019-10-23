@@ -12,7 +12,7 @@ from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
 from . import wip_label
-from . import wildcard_labels
+# from . import wildcard_labels
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -30,11 +30,13 @@ async def get_config(event, gh):
         content = await gh.getitem(
             event.data['pull_request']['head']['repo']['content_url'].replace('{+path}', file),
             {'ref': sha},
-            sansio.accept_format(version="v3", media='raw')
+            sansio.accept_format(version="v3", media='raw', json=False)
         )
         config = yaml.load(content, Loader=Loader)
     except Exception:
         config = {'wip': ['wip', 'work in progress', 'work-in-progress']}
+
+    print(json.dumps(config))
 
     return config
 
@@ -43,7 +45,8 @@ async def get_config(event, gh):
 async def pull_labeled(event, gh, *args, **kwargs):
     """Handle pull request labeled event."""
 
-    config = get_config(event, gh)
+    print('labeled')
+    config = await get_config(event, gh)
     await wip_label.wip(event, gh, config)
 
 
@@ -51,33 +54,34 @@ async def pull_labeled(event, gh, *args, **kwargs):
 async def pull_unlabeled(event, gh, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
-    config = get_config(event, gh)
+    print('unlabeled')
+    config = await get_config(event, gh)
     await wip_label.wip(event, gh, config)
 
 
-@router.register("pull_request", action="reopened")
-async def pull_reopened(event, gh, *args, **kwargs):
-    """Handle reopened events."""
+# @router.register("pull_request", action="reopened")
+# async def pull_reopened(event, gh, *args, **kwargs):
+#     """Handle reopened events."""
 
-    config = get_config(event, gh)
-    await wildcard_labels.wildcard_labels(event, gh, config)
-    await wip_label.wip(event, gh, config)
-
-
-@router.register("pull_request", action="opened")
-async def pull_reopened(event, gh, *args, **kwargs):
-    """Handle reopened events."""
-
-    config = get_config(event, gh)
-    await wildcard_labels.wildcard_labels(event, gh, config)
+#     config = await get_config(event, gh)
+#     await wildcard_labels.wildcard_labels(event, gh, config)
+#     await wip_label.wip(event, gh, config)
 
 
-@router.register("pull_request", action="synchronize")
-async def pull_synchronize(event, gh, *args, **kwargs):
-    """Handle synchronization events."""
+# @router.register("pull_request", action="opened")
+# async def pull_reopened(event, gh, *args, **kwargs):
+#     """Handle reopened events."""
 
-    config = get_config(event, gh)
-    await wildcard_labels.wildcard_labels(event, gh, config)
+#     config = get_config(event, gh)
+#     await wildcard_labels.wildcard_labels(event, gh, config)
+
+
+# @router.register("pull_request", action="synchronize")
+# async def pull_synchronize(event, gh, *args, **kwargs):
+#     """Handle synchronization events."""
+
+#     config = get_config(event, gh)
+#     await wildcard_labels.wildcard_labels(event, gh, config)
 
 
 @routes.post("/")
@@ -97,7 +101,9 @@ async def main(request):
             return web.Response(status=200)
 
         async with aiohttp.ClientSession() as session:
+            print('authtentication')
             gh = gh_aiohttp.GitHubAPI(session, "gir-bot", oauth_token=token, cache=cache)
+            print('dispatch')
 
             await asyncio.sleep(1)
             await router.dispatch(event, gh)

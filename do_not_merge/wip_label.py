@@ -11,6 +11,9 @@ async def wip(event, gh, config):
         name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
         if name in set([label.lower() for label in config.get('wip', [])]):
             wip = True
+            break
+
+    print('WIP: ', str(wip))
 
     await gh.post(
         event.data['pull_request']['statuses_url'],
