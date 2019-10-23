@@ -96,4 +96,4 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         changed = True
         labels.extend(new_labels)
     if changed:
-        await gh.post(url, data={'labels': labels}, accept=accept)
+        await gh.put(url, data={'labels': labels}, accept=accept)

@@ -15,6 +15,7 @@ from gidgethub import aiohttp as gh_aiohttp
 from . import wip_label
 from . import wildcard_labels
 from . import label_mgr
+from . import triage_labels
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -63,38 +64,48 @@ async def pull_unlabeled(event, gh, *args, **kwargs):
 
 @router.register("pull_request", action="reopened")
 async def pull_reopened(event, gh, *args, **kwargs):
-    """Handle reopened events."""
+    """Handle pull reopened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
+    await triage_labels.triage(event, gh, config)
     await wip_label.wip(event, gh, config)
 
 
 @router.register("pull_request", action="opened")
 async def pull_opened(event, gh, *args, **kwargs):
-    """Handle opened events."""
+    """Handle pull opened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
+    await triage_labels.triage(event, gh, config)
     await wip_label.wip(event, gh, config)
 
 
 @router.register("pull_request", action="synchronize")
 async def pull_synchronize(event, gh, *args, **kwargs):
-    """Handle synchronization events."""
+    """Handle pull synchronization events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
+    await triage_labels.triage(event, gh, config)
     await wip_label.wip(event, gh, config)
 
 
-@router.register('push')
+@router.register("issues", action="opened")
+async def issues_opened(event, gh, *args, **kwargs):
+    """Handle issues open events."""
+
+    config = await get_config(gh, event)
+    await triage_labels.triage(event, gh, config)
+
+
+@router.register('push', ref='refs/heads/master')
 async def push(event, gh, *args, **kwargs):
     """Handle push events on master."""
 
-    if event.data['ref'].startswith('refs/heads/') and event.data['ref'].replace('refs/heads/', '', 1) == 'master':
-        config = await get_config(gh, event, event.data['after'])
-        await label_mgr.manage(event, gh, config)
+    config = await get_config(gh, event, event.data['after'])
+    await label_mgr.manage(event, gh, config)
 
 
 @routes.post("/")
