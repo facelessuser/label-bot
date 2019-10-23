@@ -43,7 +43,7 @@ def _parse_colors(config):
     return colors
 
 
-def find_label(labels, label, label_color, label_description):
+def _find_label(labels, label, label_color, label_description):
     """Find label."""
 
     edit = None
@@ -71,12 +71,12 @@ def find_label(labels, label, label_color, label_description):
     return edit
 
 
-def parse_labels(config):
+def _parse_labels(config):
     """Parse labels."""
 
     labels = []
     seen = set()
-    colors = parse_colors(config)
+    colors = _parse_colors(config)
     for value in config.get('labels', {}):
         name = value['name']
         _validate_str(name)
@@ -101,14 +101,14 @@ def parse_labels(config):
 async def manage(event, gh, config):
     """Sync labels."""
 
-    labels, ignores = parse_labels
+    labels, ignores = _parse_labels(config)
     delete = config.get('delete_labels', False)
     updated = set()
     label_url = event.data['repository']['labels_url']
     accept = 'application/vnd.github.symmetra-preview+json'
 
     async for label in gh.getiter(label_url.replace('{/name}', ''), accept=accept):
-        edit = find_label(labels, label['name'], label['color'], label['description'])
+        edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
             await gh.patch(

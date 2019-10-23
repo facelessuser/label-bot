@@ -14,6 +14,7 @@ from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
 from . import wip_label
 from . import wildcard_labels
+from . import label_mgr
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -24,12 +25,12 @@ routes = web.RouteTableDef()
 cache = cachetools.LRUCache(maxsize=500)
 
 
-async def get_config(event, gh):
+async def get_config(gh, event, ref='master'):
     """Get label configuration file."""
 
     try:
         result = await gh.getitem(
-            event.data['pull_request']['head']['repo']['contents_url'] + '{?ref}',
+            event.data['repository']['contents_url'] + '{?ref}',
             {
                 'path': '.github/labels.yml',
                 'ref': event.data['pull_request']['head']['sha']
@@ -48,7 +49,7 @@ async def get_config(event, gh):
 async def pull_labeled(event, gh, *args, **kwargs):
     """Handle pull request labeled event."""
 
-    config = await get_config(event, gh)
+    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wip_label.wip(event, gh, config)
 
 
@@ -56,7 +57,7 @@ async def pull_labeled(event, gh, *args, **kwargs):
 async def pull_unlabeled(event, gh, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
-    config = await get_config(event, gh)
+    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wip_label.wip(event, gh, config)
 
 
@@ -64,7 +65,7 @@ async def pull_unlabeled(event, gh, *args, **kwargs):
 async def pull_reopened(event, gh, *args, **kwargs):
     """Handle reopened events."""
 
-    config = await get_config(event, gh)
+    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
     await wip_label.wip(event, gh, config)
 
@@ -73,7 +74,7 @@ async def pull_reopened(event, gh, *args, **kwargs):
 async def pull_opened(event, gh, *args, **kwargs):
     """Handle opened events."""
 
-    config = await get_config(event, gh)
+    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
     await wip_label.wip(event, gh, config)
 
@@ -82,16 +83,18 @@ async def pull_opened(event, gh, *args, **kwargs):
 async def pull_synchronize(event, gh, *args, **kwargs):
     """Handle synchronization events."""
 
-    config = await get_config(event, gh)
+    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wildcard_labels.wildcard_labels(event, gh, config)
     await wip_label.wip(event, gh, config)
 
 
 @router.register('push')
 async def push(event, gh, *args, **kwargs):
-    """Handle push events."""
+    """Handle push events on master."""
 
-    print(json.dumps(event.data))
+    if event.data['ref'].startswith('refs/heads/') and event.data['ref'].replace('refs/heads/', '', 1) == 'master':
+        config = await get_config(gh, event, event.data['after'])
+        await label_mgr.manage(event, gh, config)
 
 
 @routes.post("/")
