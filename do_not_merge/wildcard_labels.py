@@ -19,13 +19,10 @@ async def get_flags(config):
 async def wildcard_labels(event, gh, config):
     """Label issues by files that are changed."""
 
-    print('Process labels')
     rules = config.get('rules', [])
     if rules:
         flags = await get_flags(config)
-        print(flags)
         files = await get_changed_files(event, gh)
-        print(files)
         add, remove = await get_labels(rules, files, flags)
         await update_issue_labels(event, gh, add, remove)
 
@@ -35,10 +32,11 @@ async def get_changed_files(event, gh):
 
     files = []
     compare = await gh.getitem(
-        event.data['repository']['compare_url'].format(
-            base=event.data['pull_request']['base']['label'],
-            head=event.data['pull_request']['head']['label']
-        ),
+        event.data['repository']['compare_url'],
+        {
+            'base': event.data['pull_request']['base']['label'],
+            'head': event.data['pull_request']['head']['label']
+        },
         accept=sansio.accept_format(version="v3")
     )
     for file in compare['files']:
@@ -83,7 +81,6 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
     url = event.data['pull_request']['issue_url'] + '/labels'
     accept = 'application/vnd.github.symmetra-preview+json'
     changed = False
-    print('get iter')
     async for label in gh.getiter(url, accept=accept):
         name = label['name']
         low = name.lower()
@@ -99,5 +96,4 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         changed = True
         labels.extend(new_labels)
     if changed:
-        print('post')
-        await gh.post(url, {'labels': labels}, accept=accept)
+        await gh.post(url, data={'labels': labels}, accept=accept)

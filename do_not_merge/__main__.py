@@ -8,6 +8,7 @@ import cachetools
 import urllib.parse
 import traceback
 import yaml
+import base64
 from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
@@ -27,16 +28,19 @@ async def get_config(event, gh):
     """Get label configuration file."""
 
     try:
-        content = await gh.getitem(
-            event.data['pull_request']['head']['repo']['content_url'].replace('{+path}', file),
-            {'ref': sha},
-            sansio.accept_format(version="v3", media='raw', json=False)
+        result = await gh.getitem(
+            event.data['pull_request']['head']['repo']['contents_url'] + '{?ref}',
+            {
+                'path': '.github/labels.yml',
+                'ref': event.data['pull_request']['head']['sha']
+            }
         )
+        content = base64.b64decode(result['content']).decode('utf-8')
         config = yaml.load(content, Loader=Loader)
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         config = {'wip': ['wip', 'work in progress', 'work-in-progress']}
 
-    print(json.dumps(config))
     return config
 
 
@@ -69,16 +73,18 @@ async def pull_reopened(event, gh, *args, **kwargs):
 async def pull_opened(event, gh, *args, **kwargs):
     """Handle opened events."""
 
-    config = get_config(event, gh)
+    config = await get_config(event, gh)
     await wildcard_labels.wildcard_labels(event, gh, config)
+    await wip_label.wip(event, gh, config)
 
 
 @router.register("pull_request", action="synchronize")
 async def pull_synchronize(event, gh, *args, **kwargs):
     """Handle synchronization events."""
 
-    config = get_config(event, gh)
+    config = await get_config(event, gh)
     await wildcard_labels.wildcard_labels(event, gh, config)
+    await wip_label.wip(event, gh, config)
 
 
 @routes.post("/")
