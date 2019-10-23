@@ -87,6 +87,13 @@ async def pull_synchronize(event, gh, *args, **kwargs):
     await wip_label.wip(event, gh, config)
 
 
+@router.register('push')
+async def push(event, gh, *args, **kwargs):
+    """Handle push events."""
+
+    print(json.dumps(event.data))
+
+
 @routes.post("/")
 async def main(request):
 

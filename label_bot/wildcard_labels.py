@@ -3,7 +3,7 @@ from wcmatch import glob
 from gidgethub import sansio
 
 
-async def get_flags(config):
+def get_flags(config):
     """Get glob flags."""
 
     flags = glob.GLOBSTAR | glob.DOTGLOB | glob.NEGATE | glob.SPLIT | glob.NEGATEALL
@@ -16,35 +16,7 @@ async def get_flags(config):
     return flags
 
 
-async def wildcard_labels(event, gh, config):
-    """Label issues by files that are changed."""
-
-    rules = config.get('rules', [])
-    if rules:
-        flags = await get_flags(config)
-        files = await get_changed_files(event, gh)
-        add, remove = await get_labels(rules, files, flags)
-        await update_issue_labels(event, gh, add, remove)
-
-
-async def get_changed_files(event, gh):
-    """Get changed files."""
-
-    files = []
-    compare = await gh.getitem(
-        event.data['repository']['compare_url'],
-        {
-            'base': event.data['pull_request']['base']['label'],
-            'head': event.data['pull_request']['head']['label']
-        },
-        accept=sansio.accept_format(version="v3")
-    )
-    for file in compare['files']:
-        files.append(file['filename'])
-    return files
-
-
-async def get_labels(rules, files, flags):
+def get_labels(rules, files, flags):
     """Sync labels."""
 
     add_labels = {}
@@ -72,6 +44,34 @@ async def get_labels(rules, files, flags):
                 remove_labels[low] = names[index]
 
     return add_labels, remove_labels
+
+
+async def wildcard_labels(event, gh, config):
+    """Label issues by files that are changed."""
+
+    rules = config.get('rules', [])
+    if rules:
+        flags = get_flags(config)
+        files = await get_changed_files(event, gh)
+        add, remove = get_labels(rules, files, flags)
+        await update_issue_labels(event, gh, add, remove)
+
+
+async def get_changed_files(event, gh):
+    """Get changed files."""
+
+    files = []
+    compare = await gh.getitem(
+        event.data['repository']['compare_url'],
+        {
+            'base': event.data['pull_request']['base']['label'],
+            'head': event.data['pull_request']['head']['label']
+        },
+        accept=sansio.accept_format(version="v3")
+    )
+    for file in compare['files']:
+        files.append(file['filename'])
+    return files
 
 
 async def update_issue_labels(event, gh, add_labels, remove_labels):
