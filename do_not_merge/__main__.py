@@ -1,58 +1,83 @@
 """Main."""
 import asyncio
+import aiohttp
 import os
 import sys
-import aiohttp
+import json
+import cachetools
+import urllib.parse
+import traceback
+import yaml
 from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
-import json
-import traceback
+from . import wip_label
+from . import wildcard_labels
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 router = routing.Router()
 routes = web.RouteTableDef()
+cache = cachetools.LRUCache(maxsize=500)
 
 
-def is_wip(event):
-    """Is work in progress."""
+async def get_config(event, gh):
+    """Get label configuration file."""
 
-    wip = False
-    labels = []
-    for label in event.data['pull_request']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name in ('wip', 'work in progress', 'work-in-progress'):
-            wip = True
-    return wip
+    try:
+        content = await gh.getitem(
+            event.data['pull_request']['head']['repo']['content_url'].replace('{+path}', file),
+            {'ref': sha},
+            sansio.accept_format(version="v3", media='raw')
+        )
+        config = yaml.load(content, Loader=Loader)
+    except Exception:
+        config = {'wip': ['wip', 'work in progress', 'work-in-progress']}
+
+    return config
 
 
 @router.register("pull_request", action="labeled")
 async def pull_labeled(event, gh, *args, **kwargs):
+    """Handle pull request labeled event."""
 
-    wip = is_wip(event)
-    await gh.post(
-        event.data['pull_request']['statuses_url'],
-        data={
-          "state": "pending" if wip else "success",
-          "target_url": "https://github.com/isaac-muse/do-not-merge",
-          "description": "Work in progress" if wip else "Ready for review",
-          "context": "wip"
-        }
-    )
+    config = get_config(event, gh)
+    await wip_label.wip(event, gh, config)
 
 
 @router.register("pull_request", action="unlabeled")
 async def pull_unlabeled(event, gh, *args, **kwargs):
+    """Handle pull request unlabeled event."""
 
-    wip = is_wip(event)
-    await gh.post(
-        event.data['pull_request']['statuses_url'],
-        data={
-          "state": "pending" if wip else "success",
-          "target_url": "https://github.com/isaac-muse/do-not-merge",
-          "description": "Work in progress" if wip else "Ready for review",
-          "context": "wip"
-        }
-    )
+    config = get_config(event, gh)
+    await wip_label.wip(event, gh, config)
+
+
+@router.register("pull_request", action="reopened")
+async def pull_reopened(event, gh, *args, **kwargs):
+    """Handle reopened events."""
+
+    config = get_config(event, gh)
+    await wildcard_labels.wildcard_labels(event, gh, config)
+    await wip_label.wip(event, gh, config)
+
+
+@router.register("pull_request", action="opened")
+async def pull_reopened(event, gh, *args, **kwargs):
+    """Handle reopened events."""
+
+    config = get_config(event, gh)
+    await wildcard_labels.wildcard_labels(event, gh, config)
+
+
+@router.register("pull_request", action="synchronize")
+async def pull_synchronize(event, gh, *args, **kwargs):
+    """Handle synchronization events."""
+
+    config = get_config(event, gh)
+    await wildcard_labels.wildcard_labels(event, gh, config)
 
 
 @routes.post("/")
@@ -72,7 +97,7 @@ async def main(request):
             return web.Response(status=200)
 
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, "isaac-muse/do-not-merge", oauth_token=token)
+            gh = gh_aiohttp.GitHubAPI(session, "gir-bot", oauth_token=token, cache=cache)
 
             await asyncio.sleep(1)
             await router.dispatch(event, gh)
