@@ -41,7 +41,7 @@ async def get_config(gh, event, ref='master'):
         config = yaml.load(content, Loader=Loader)
     except Exception:
         traceback.print_exc(file=sys.stdout)
-        config = {'wip': ['wip', 'work in progress', 'work-in-progress']}
+        config = {}
 
     return config
 

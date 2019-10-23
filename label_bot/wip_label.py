@@ -9,7 +9,7 @@ async def wip(event, gh, config):
     wip = False
     for label in event.data['pull_request']['labels']:
         name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name in set([label.lower() for label in config.get('wip', [])]):
+        if name in set([label.lower() for label in config.get('wip', ['wip', 'work in progress', 'work-in-progress'])]):
             wip = True
             break
 
