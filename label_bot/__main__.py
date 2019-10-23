@@ -33,7 +33,7 @@ async def get_config(gh, event, ref='master'):
             event.data['repository']['contents_url'] + '{?ref}',
             {
                 'path': '.github/labels.yml',
-                'ref': event.data['pull_request']['head']['sha']
+                'ref': ref
             }
         )
         content = base64.b64decode(result['content']).decode('utf-8')

@@ -1,5 +1,8 @@
 """Label management."""
 from collections import namedtuple
+import re
+
+RE_VALID_COLOR = re.compile('#[a-fA-F0-9]{6}')
 
 
 class LabelEdit(namedtuple('LabelEdit', ['old', 'new', 'color', 'description', 'modified'])):
@@ -113,8 +116,8 @@ async def manage(event, gh, config):
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
             await gh.patch(
                 label_url,
-                {'name': edit.old_name},
-                data={'new_name': edit.new_name, 'color': edit.color, 'description': edit.description},
+                {'name': edit.old},
+                data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
                 accept=accept
             )
             updated.add(edit.old)
@@ -140,6 +143,6 @@ async def manage(event, gh, config):
             print('    Creating {}: #{} "{}"'.format(name, color, description))
             await gh.post(
                 label_url.replace('{/name}', ''),
-                data={'new_name': name, 'color': color, 'description': description},
+                data={'name': name, 'color': color, 'description': description},
                 accept=accept
             )
