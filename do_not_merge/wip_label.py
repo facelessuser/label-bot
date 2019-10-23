@@ -13,8 +13,6 @@ async def wip(event, gh, config):
             wip = True
             break
 
-    print('WIP: ', str(wip))
-
     await gh.post(
         event.data['pull_request']['statuses_url'],
         data={

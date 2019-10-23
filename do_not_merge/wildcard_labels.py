@@ -19,14 +19,18 @@ async def get_flags(config):
 async def wildcard_labels(event, gh, config):
     """Label issues by files that are changed."""
 
-    sha = event.data['pull_request']['head']['sha']
-    flags = await get_flags(config)
-    files = await get_changed_files(event, gh, config)
-    add, remove = await get_labels(files, flags)
-    await update_issue_labels(event, gh, add, remove)
+    print('Process labels')
+    rules = config.get('rules', [])
+    if rules:
+        flags = await get_flags(config)
+        print(flags)
+        files = await get_changed_files(event, gh)
+        print(files)
+        add, remove = await get_labels(rules, files, flags)
+        await update_issue_labels(event, gh, add, remove)
 
 
-async def get_changed_files(event, gh, files):
+async def get_changed_files(event, gh):
     """Get changed files."""
 
     files = []
@@ -42,17 +46,17 @@ async def get_changed_files(event, gh, files):
     return files
 
 
-async def get_labels(files, flags):
+async def get_labels(rules, files, flags):
     """Sync labels."""
 
     add_labels = {}
     for file in files:
-        for label in self.labels:
+        for label in rules:
             names = label['labels']
             lows = [n.lower() for n in names]
             match = False
             for pattern in label['patterns']:
-                if glob.globmatch(file, pattern, flags=self.flags):
+                if glob.globmatch(file, pattern, flags=flags):
                     match = True
                     break
             if match:
@@ -62,7 +66,7 @@ async def get_labels(files, flags):
                 break
 
     remove_labels = {}
-    for label in self.labels:
+    for label in rules:
         names = label['labels']
         lows = [n.lower() for n in names]
         for index, low in enumerate(lows):
@@ -72,13 +76,14 @@ async def get_labels(files, flags):
     return add_labels, remove_labels
 
 
-def update_issue_labels(event, gh, add_labels, remove_labels):
+async def update_issue_labels(event, gh, add_labels, remove_labels):
     """Update issue labels."""
 
     labels = []
     url = event.data['pull_request']['issue_url'] + '/labels'
     accept = 'application/vnd.github.symmetra-preview+json'
     changed = False
+    print('get iter')
     async for label in gh.getiter(url, accept=accept):
         name = label['name']
         low = name.lower()
@@ -94,4 +99,5 @@ def update_issue_labels(event, gh, add_labels, remove_labels):
         changed = True
         labels.extend(new_labels)
     if changed:
+        print('post')
         await gh.post(url, {'labels': labels}, accept=accept)
