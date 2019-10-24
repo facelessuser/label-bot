@@ -4,9 +4,10 @@
 
 ## Overview
 
-This is a GitHub app for managing labels in a repository. It is written by and used in projects for @facelessuser. It
-uses the the persona of @gir-bot, but can technically use any user. Label Bot is not a publicly available service, but
-can be modified and installed in for personal use in Heroku or some other hosting service.
+This is a GitHub app for managing labels in a repository. It is written by and used in projects for
+[@facelessuser](https://github.com/facelessuser). It uses the the persona of [@gir-bot](https://github.com/gir-bot), but
+can technically use any user. Label Bot is not a publicly available service, but can be modified and installed in for
+personal use in Heroku or some other hosting service.
 
 Label bot handles a handful of label related scenarios:
 
