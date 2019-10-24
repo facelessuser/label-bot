@@ -3,9 +3,7 @@ import asyncio
 import aiohttp
 import os
 import sys
-import json
 import cachetools
-import urllib.parse
 import traceback
 import yaml
 import base64
@@ -110,6 +108,7 @@ async def push(event, gh, *args, **kwargs):
 
 @routes.post("/")
 async def main(request):
+    """Handle requests."""
 
     try:
         # Get payload

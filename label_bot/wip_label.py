@@ -1,5 +1,6 @@
 """Handle work in progress labels."""
 
+
 async def wip(event, gh, config):
     """Handle label events."""
 
@@ -16,9 +17,9 @@ async def wip(event, gh, config):
     await gh.post(
         event.data['pull_request']['statuses_url'],
         data={
-          "state": "pending" if wip else "success",
-          "target_url": "https://github.com/isaac-muse/do-not-merge",
-          "description": "Work in progress" if wip else "Ready for review",
-          "context": "wip"
+            "state": "pending" if wip else "success",
+            "target_url": "https://github.com/isaac-muse/do-not-merge",
+            "description": "Work in progress" if wip else "Ready for review",
+            "context": "wip"
         }
     )
