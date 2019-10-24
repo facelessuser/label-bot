@@ -1,5 +1,6 @@
 """Triage labels."""
 
+
 async def triage(event, gh, config):
     """Add triage labels."""
 
