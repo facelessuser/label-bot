@@ -74,31 +74,31 @@ library [`wcmatch`][wcmatch] to perform the file matching.
 
 By default, [`wcmatch`][wcmatch] is configured with the following flags:
 
-- [SPLIT][split]: enables chaining multiple patterns together with `|` so they are evaluated together. For instance, if
-  we wanted to find all Markdown and HTML files in a folder, we could use the following pattern:
+- [`SPLIT`][split]: enables chaining multiple patterns together with `|` so they are evaluated together. For instance,
+  if we wanted to find all Markdown and HTML files in a folder, we could use the following pattern:
 
     ```
     folder/*.md|folder/*.html
     ```
 
-- [GLOBSTAR][globstar]: enables the pattern `**` to match zero or more folders. For instance, if we wanted to find
+- [`GLOBSTAR`][globstar]: enables the pattern `**` to match zero or more folders. For instance, if we wanted to find
   Python files under any child folder of a given folder:
 
     ```
     src/**/*.py
     ```
 
-- [DOTGLOB][dotglob]: enables the matching of `.` at the start of a file in patterns such as `*`, `**`, `?` etc. Since
+- [`DOTGLOB`][dotglob]: enables the matching of `.` at the start of a file in patterns such as `*`, `**`, `?` etc. Since
   this is enabled, we should be able to match files that start with `.` like `.travis.yml` by simply using `*`.
 
-- [NEGATE][negate]: allows inverse match patterns by starting a pattern with `!`. It is meant to filter other normal
+- [`NEGATE`][negate]: allows inverse match patterns by starting a pattern with `!`. It is meant to filter other normal
   patterns. For instance if we wanted to find all Python files except those under our *tests* folder:
 
     ```
     **/*.py|!tests/**
     ```
 
-- [NEGATEALL][negateall]: allows using inverse patterns when no normal patterns are given. When an inverse pattern is
+- [`NEGATEALL`][negateall]: allows using inverse patterns when no normal patterns are given. When an inverse pattern is
   given with no normal patterns, the pattern of `**` is assumed as the normal pattern to filter. So if we wanted find
   any file accept HTML files:
 
@@ -109,7 +109,7 @@ By default, [`wcmatch`][wcmatch] is configured with the following flags:
 Check out the libraries [documentation][glob] for more information on syntax.
 
 The configuration file should be in the YAML format and should be found at `.github/labels.yml`. The rules consist of
-two parts: flags that control the behavior of the glob patterns, and rules that define pattens of modified files that
+two parts: flags that control the behavior of the glob patterns, and rules that define patterns of modified files that
 must match for the associated label to be applied.
 
 There are three global flags that alter the default behavior of the glob patterns:
@@ -221,7 +221,7 @@ labels:
 When `delete_labels` is set to `true`, labels not explicitly defined are remove. While you can certainly define those
 labels so that they are in the list, you can also just add the to the ignore list. Maybe they are labels created by an
 external process like `dependbot`. Regardless, if you have existing labels that you do not want to explicitly define,
-and do not wish to lose them, you can add them to the ignore lsit:
+and do not wish to lose them, you can add them to the ignore list:
 
 ```js
 colors:
