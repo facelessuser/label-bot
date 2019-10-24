@@ -1,0 +1,23 @@
+matrix:
+- name: markdown
+  sources:
+  - README.md
+  aspell:
+    lang: en
+  dictionary:
+    wordlists:
+    - .dictionary
+    output: build/dictionary/markdown.dic
+  pipeline:
+  - pyspelling.filters.markdown:
+      markdown_extensions:
+        - pymdownx.superfences:
+        - pymdownx.highlight:
+  - pyspelling.filters.html:
+      comments: false
+      attributes:
+      - title
+      - alt
+      ignores:
+      - ':matches(code, pre)'
+  - pyspelling.filters.url:
