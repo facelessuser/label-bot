@@ -19,6 +19,8 @@ try:
 except ImportError:
     from yaml import Loader
 
+__version__ = '1.0.0'
+
 router = routing.Router()
 routes = web.RouteTableDef()
 cache = cachetools.LRUCache(maxsize=500)
@@ -117,6 +119,7 @@ async def main(request):
         # Get authtentication
         secret = os.environ.get("GH_SECRET")
         token = os.environ.get("GH_AUTH")
+        bot = os.environ.get("GH_BOT")
         event = sansio.Event.from_http(request.headers, payload, secret=secret)
 
         # Handle ping
@@ -124,7 +127,7 @@ async def main(request):
             return web.Response(status=200)
 
         async with aiohttp.ClientSession() as session:
-            gh = gh_aiohttp.GitHubAPI(session, "gir-bot", oauth_token=token, cache=cache)
+            gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
             await asyncio.sleep(1)
             await router.dispatch(event, gh)
