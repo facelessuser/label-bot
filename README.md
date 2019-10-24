@@ -19,6 +19,22 @@ Label bot handles a handful of label related scenarios:
 - Label Bot can mark a pull requests with additional tags based on glob patterns. If a file matches a glob pattern, it
   is assigned the associated label(s).
 
+## Can I Use It?
+
+Sure, you'll need to fork it and deploy it on Heroku, or host it somewhere else if desired. There is no publicly
+available bot on the marketplace.
+
+1. Make sure to set the `GH_BOT` environmental variable in your environment. `GH_BOT` should be the name of the
+   GitHub user the bot is operating as.
+2. Also make sure you set `GH_AUTH` variable which is the access token by which the bot user is authenticated.
+   Normally `repo` privileges are sufficient. Learn how to setup an [access token][access] by checking out the
+   documentation.
+3. Setup a webhook in your repository. Point the URL to your running app. Ensure it sends data via JSON. Use a
+   token with high entropy and make sure it is used by your webhook and assigned to `GH_SECRET` in your app
+   environment. Lastly, make sure the webhook sends requests for `issues`, `push`, and `pull_request` events.
+4. If you are using a separate bot account to communicate with your repos, you may have to add the bot as a
+   collaborator.
+
 ## Triage Labels
 
 Label Bot will mark new issue with `triage` and new pulls with `needs-review`. In addition, when a pull request is
