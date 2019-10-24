@@ -1,4 +1,5 @@
 [![Build][github-ci-image]][github-ci-link]
+![License][license-image-mit]
 # Label Bot
 
 ## Overview
