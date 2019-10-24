@@ -12,4 +12,8 @@ async def triage(event, gh, config):
         url = event.data['issue']['labels_url'].replace('{/name}', '')
 
     if labels:
-        await gh.post(url, data={'labels': labels}, accept='application/vnd.github.symmetra-preview+json')
+        await gh.post(
+            url,
+            data={'labels': labels},
+            accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        )

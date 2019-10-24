@@ -29,7 +29,7 @@ async def wip(event, gh, config):
         elif action == 'reopened':
             # Physically get the latest labels for a reopened event.
             url = event.data['pull_request']['issue_url'] + '/labels'
-            accept = 'application/vnd.github.symmetra-preview+json'
+            accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
             async for label in gh.getiter(url, accept=accept):
                 name = label['name'].lower()
                 if name in wip_list:

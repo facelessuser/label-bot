@@ -108,7 +108,7 @@ async def manage(event, gh, config):
     delete = config.get('delete_labels', False)
     updated = set()
     label_url = event.data['repository']['labels_url']
-    accept = 'application/vnd.github.symmetra-preview+json'
+    accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
 
     # No labels defined, assume this has not been configured
     if not labels:

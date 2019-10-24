@@ -66,8 +66,7 @@ async def get_changed_files(event, gh):
         {
             'base': event.data['pull_request']['base']['label'],
             'head': event.data['pull_request']['head']['label']
-        },
-        accept=sansio.accept_format(version="v3")
+        }
     )
     for file in compare['files']:
         files.append(file['filename'])
@@ -79,7 +78,7 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
 
     labels = []
     url = event.data['pull_request']['issue_url'] + '/labels'
-    accept = 'application/vnd.github.symmetra-preview+json'
+    accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
     changed = False
     async for label in gh.getiter(url, accept=accept):
         name = label['name']
