@@ -2,6 +2,8 @@
 ![License][license-image-mit]
 # Label Bot
 
+Some change
+
 ## Overview
 
 This is a GitHub app for managing labels in a repository. It is written by and used in projects for
