@@ -110,6 +110,10 @@ async def manage(event, gh, config):
     label_url = event.data['repository']['labels_url']
     accept = 'application/vnd.github.symmetra-preview+json'
 
+    # No labels defined, assume this has not been configured
+    if not labels:
+        return
+
     async for label in gh.getiter(label_url.replace('{/name}', ''), accept=accept):
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
