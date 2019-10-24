@@ -47,7 +47,7 @@ def get_labels(rules, files, flags):
 
 
 async def wildcard_labels(event, gh, config):
-    """Label issues by files that are changed."""
+    """Label issues by files that have changed."""
 
     rules = config.get('rules', [])
     if rules:

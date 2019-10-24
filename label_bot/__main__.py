@@ -10,10 +10,11 @@ import base64
 from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
-from . import wip_label
+from . import wip_labels
 from . import wildcard_labels
 from . import label_mgr
 from . import triage_labels
+from . import review_labels
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -51,7 +52,7 @@ async def pull_labeled(event, gh, *args, **kwargs):
     """Handle pull request labeled event."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-    await wip_label.wip(event, gh, config)
+    await wip_labels.wip(event, gh, config)
 
 
 @router.register("pull_request", action="unlabeled")
@@ -59,7 +60,7 @@ async def pull_unlabeled(event, gh, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-    await wip_label.wip(event, gh, config)
+    await wip_labels.wip(event, gh, config)
 
 
 @router.register("pull_request", action="reopened")
@@ -67,9 +68,9 @@ async def pull_reopened(event, gh, *args, **kwargs):
     """Handle pull reopened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-    await wip_label.wip(event, gh, config)
+    await wip_labels.wip(event, gh, config)
     await wildcard_labels.wildcard_labels(event, gh, config)
-    await triage_labels.triage(event, gh, config)
+    await review_labels.review(event, gh, config)
 
 
 @router.register("pull_request", action="opened")
@@ -77,9 +78,9 @@ async def pull_opened(event, gh, *args, **kwargs):
     """Handle pull opened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-    await wip_label.wip(event, gh, config)
+    await wip_labels.wip(event, gh, config)
     await wildcard_labels.wildcard_labels(event, gh, config)
-    await triage_labels.triage(event, gh, config)
+    await review_labels.review(event, gh, config)
 
 
 @router.register("pull_request", action="synchronize")
@@ -87,9 +88,9 @@ async def pull_synchronize(event, gh, *args, **kwargs):
     """Handle pull synchronization events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-    await wip_label.wip(event, gh, config)
+    await wip_labels.wip(event, gh, config)
     await wildcard_labels.wildcard_labels(event, gh, config)
-    await triage_labels.triage(event, gh, config)
+    await review_labels.review(event, gh, config)
 
 
 @router.register("issues", action="opened")

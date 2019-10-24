@@ -115,7 +115,7 @@ async def manage(event, gh, config):
     if not labels:
         return
 
-    async for label in gh.getiter(label_url.replace('{/name}', ''), accept=accept):
+    async for label in gh.getiter(label_url, accept=accept):
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
@@ -147,7 +147,7 @@ async def manage(event, gh, config):
         if name not in updated:
             print('    Creating {}: #{} "{}"'.format(name, color, description))
             await gh.post(
-                label_url.replace('{/name}', ''),
+                label_url,
                 data={'name': name, 'color': color, 'description': description},
                 accept=accept
             )

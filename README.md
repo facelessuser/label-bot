@@ -13,9 +13,9 @@ Label bot handles a handful of label related scenarios:
 
 - Label Bot can manage labels by syncing them up with a list specified in a configuration file. If the configuration
   file changes, labels will be added, edited, or removed (if enabled) to match the configuration.
-- Label Bot can mark new issues and pull requests with specific labels. For instance, out of the box, it marks new
-  issues with `triage`. New pull requests, and any new pushes to a pull request, are marked `needs-review`. This helps
-  highlight issues that need attention.
+- Label Bot can mark new issues with a specific labels. For instance, out of the box, it marks new issues with `triage`.
+- Label Bot can mark new pull requests and pull requests with specific labels. For instance, out of the box, it marks
+  new pull requests with `needs-review`. Additionally, any new pushes to a pull request, are marked `needs-review`.
 - Label Bot will mark pull requests as pending if certain labels are present. By default it looks for things like:
   `work-in-progress`, `wip`, etc.
 - Label Bot can mark a pull requests with additional tags based on glob patterns. If a file matches a glob pattern, it
@@ -39,15 +39,40 @@ available bot on the marketplace.
 
 ## Triage Labels
 
-Label Bot will mark new issue with `triage` and new pulls with `needs-review`. In addition, when a pull request is
-pushed with new changes, they are also marked with `needs-review`.
+Label Bot will mark new issue with `triage`.
 
-If desired, one can control what label/labels get assigned on these two events by adding the following options to their
-`.github/labels.yml` in their project:
+If desired, you can control what label gets assigned by adding the following option in `.github/labels.yml` in your
+project:
 
 ```yml
-triage_issue_labels: [triage]
-triage_pull_request_labels: [needs-review]
+triage_label: triage
+```
+
+If you want to turn off triage, because you are creating the issue, and have a good understanding of it, you can attach
+the `skip-triage` label. If you prefer to rename it, or add additional labels, simply specify a different name(s) using
+the following option:
+
+```yml
+triage_skip: [skip-triage]
+```
+
+## Review Labels
+
+Label Bot will mark new pull requests with `needs-review`. It will also re-add the label if it was removed, and more
+code is pushed.
+
+If desired, you can control what label gets assigned by adding the following option in `.github/labels.yml` in your
+project:
+
+```yml
+review_label: needs-review
+```
+
+If you want to turn off this feature in a pull request, for whatever reason, you can attach the `skip-review` label. If
+you prefer to rename it, or add additional labels, simply specify a different name(s) using the following option:
+
+```yml
+review_skip: [skip-review]
 ```
 
 ## WIP Labels
