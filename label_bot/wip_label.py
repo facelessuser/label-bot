@@ -8,9 +8,13 @@ async def wip(event, gh, config):
         return
 
     wip = False
-    for label in event.data['pull_request']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name in set([label.lower() for label in config.get('wip', ['wip', 'work in progress', 'work-in-progress'])]):
+    wip_list = set([label.lower() for label in config.get('wip', ['wip', 'work in progress', 'work-in-progress'])])
+
+    url = event.data['pull_request']['issue_url'] + '/labels'
+    accept = 'application/vnd.github.symmetra-preview+json'
+    async for label in gh.getiter(url, accept=accept):
+        name = label['name'].lower()
+        if name in wip_list:
             wip = True
             break
 
