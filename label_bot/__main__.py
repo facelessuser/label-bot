@@ -116,7 +116,7 @@ async def main(request):
         # Get payload
         payload = await request.read()
 
-        # Get authtentication
+        # Get authentication
         secret = os.environ.get("GH_SECRET")
         token = os.environ.get("GH_AUTH")
         bot = os.environ.get("GH_BOT")
