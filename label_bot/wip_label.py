@@ -1,4 +1,5 @@
 """Handle work in progress labels."""
+from gidgethub import sansio
 
 DEFAULT = ('wip', 'work in progress', 'work-in-progress')
 

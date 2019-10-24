@@ -1,8 +1,16 @@
 """Triage labels."""
+from gidgethub import sansio
 
 
 async def triage(event, gh, config):
     """Add triage labels."""
+
+    key = 'pull_request' if 'pull_request' in event.data else 'issue'
+    skip = config.get('triage_skip', 'skip-triage').lower()
+    for label in event.data[key]['labels']:
+        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
+        if name == skip:
+            return
 
     if 'pull_request' in event.data:
         labels = config.get('triage_issue_labels', ['needs-review'])

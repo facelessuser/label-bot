@@ -1,4 +1,5 @@
 """Label management."""
+from gidgethub import sansio
 from collections import namedtuple
 import re
 
