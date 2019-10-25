@@ -118,7 +118,7 @@ async def run(event, gh, config):
     """Run task."""
 
     try:
-        wildcard_labels(event, gh, config)
+        await wildcard_labels(event, gh, config)
         success = True
     except Exception:
         success = False

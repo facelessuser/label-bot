@@ -169,7 +169,7 @@ async def run(event, gh, config):
     """Run task."""
 
     try:
-        sync(event, gh, config)
+        await sync(event, gh, config)
         success = True
     except Exception:
         success = False

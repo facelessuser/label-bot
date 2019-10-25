@@ -49,7 +49,7 @@ async def run(event, gh, config):
     """Run task."""
 
     try:
-        wip(event, gh, config)
+        await wip(event, gh, config)
         fail = False
     except Exception:
         fail = True

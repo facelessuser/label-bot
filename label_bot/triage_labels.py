@@ -6,7 +6,7 @@ async def run(event, gh, config):
     """Run task."""
 
     try:
-        triage(event, gh, config)
+        await triage(event, gh, config)
         success = True
     except Exception:
         success = False

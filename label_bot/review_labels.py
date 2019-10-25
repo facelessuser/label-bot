@@ -32,7 +32,7 @@ async def run(event, gh, config):
     """Run the task."""
 
     try:
-        review(event, gh, config)
+        await review(event, gh, config)
         success = True
     except Exception:
         success = False
