@@ -16,7 +16,8 @@ async def wip(event, gh, config):
     wip_list = set([label.lower() for label in config.get('wip', ['wip', 'work in progress', 'work-in-progress'])])
 
     if action in ('reopened', 'synchronize'):
-        # Physically get the latest labels for a reopened event.
+        # Physically get the latest labels for a reopened and syncronize event.
+
         url = event.data['pull_request']['issue_url'] + '/labels'
         accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
         async for label in gh.getiter(url, accept=accept):
