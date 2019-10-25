@@ -1,4 +1,4 @@
-"""Label management."""
+"""Label syncing."""
 from gidgethub import sansio
 from collections import namedtuple
 import os
@@ -114,7 +114,7 @@ def _parse_labels(config):
     return labels, ignores
 
 
-async def manage(event, gh, config):
+async def sync(event, gh, config):
     """Sync labels."""
 
     labels, ignores = _parse_labels(config)
@@ -169,7 +169,7 @@ async def run(event, gh, config):
     """Run task."""
 
     try:
-        manage(event, gh, config)
+        sync(event, gh, config)
         success = True
     except Exception:
         success = False
