@@ -21,7 +21,7 @@ async def run(event, gh, config):
 async def triage(event, gh, config):
     """Add triage labels."""
 
-    triage_label = config.get('triage_label', 'needs-review')
+    triage_label = config.get('triage_label', 'triage')
 
     # Nothing to add
     if not triage_label:
