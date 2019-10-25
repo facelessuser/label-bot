@@ -1,6 +1,7 @@
 """Label management."""
 from gidgethub import sansio
 from collections import namedtuple
+import os
 import re
 import traceback
 import sys
@@ -162,3 +163,24 @@ async def manage(event, gh, config):
                 data={'name': name, 'color': color, 'description': description},
                 accept=accept
             )
+
+
+async def run(event, gh, config):
+    """Run task."""
+
+    try:
+        manage(event, gh, config)
+        success = True
+    except Exception:
+        success = False
+
+    await gh.post(
+        event.data['repository']['statuses_url'],
+        {'sha': event.data['after']},
+        data={
+            "state": "success" if success else "failure",
+            "target_url": "https://github.com/gir-bot/label-bot",
+            "description": "Task completed" if success else "Failed to complete",
+            "context": "{}/labels/sync".format(os.environ.get("GH_BOT"))
+        }
+    )

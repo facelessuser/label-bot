@@ -1,4 +1,5 @@
 """Review labels."""
+import os
 from gidgethub import sansio
 
 
@@ -24,4 +25,24 @@ async def review(event, gh, config):
         event.data['pull_request']['issue_url'] + '/labels',
         data={'labels': [review_label]},
         accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+    )
+
+
+async def run(event, gh, config):
+    """Run the task."""
+
+    try:
+        review(event, gh, config)
+        success = True
+    except Exception:
+        success = False
+
+    await gh.post(
+        event.data['pull_request']['statuses_url'],
+        data={
+            "state": "success" if success else "failure",
+            "target_url": "https://github.com/gir-bot/label-bot",
+            "description": "Task completed" if success else "Failed to complete",
+            "context": "{}/labels/review".format(os.environ.get("GH_BOT"))
+        }
     )

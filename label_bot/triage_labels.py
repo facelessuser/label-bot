@@ -2,6 +2,22 @@
 from gidgethub import sansio
 
 
+async def run(event, gh, config):
+    """Run task."""
+
+    try:
+        triage(event, gh, config)
+        success = True
+    except Exception:
+        success = False
+
+    if not success:
+        gh.post(
+            event.data['issue']['comments_url'],
+            data={'body': 'Oops! It appears I am having difficulty marking this issue for triage.'}
+        )
+
+
 async def triage(event, gh, config):
     """Add triage labels."""
 

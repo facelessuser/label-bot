@@ -3,6 +3,7 @@ from wcmatch import glob
 from gidgethub import sansio
 import traceback
 import sys
+import os
 
 
 def get_flags(config):
@@ -111,3 +112,23 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         labels.extend(new_labels)
     if changed:
         await gh.put(url, data={'labels': labels}, accept=accept)
+
+
+async def run(event, gh, config):
+    """Run task."""
+
+    try:
+        wildcard_labels(event, gh, config)
+        success = True
+    except Exception:
+        success = False
+
+    await gh.post(
+        event.data['pull_request']['statuses_url'],
+        data={
+            "state": "success" if success else "failure",
+            "target_url": "https://github.com/gir-bot/label-bot",
+            "description": "Task completed" if success else "Failed to complete",
+            "context": "{}/labels/auto-labels".format(os.environ.get("GH_BOT"))
+        }
+    )
