@@ -33,7 +33,6 @@ def get_labels(rules, files, flags):
                 for index, low in enumerate(lows):
                     if low not in add_labels:
                         add_labels[low] = names[index]
-                break
 
     remove_labels = {}
     for label in rules:
