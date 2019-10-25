@@ -13,10 +13,13 @@ rules:
     patterns: ['README.md']
 
   - labels: [wip-labels]
-    patterns: ['label_bot/wip_label.py']
+    patterns: ['label_bot/wip_labels.py']
 
   - labels: [triage-labels]
     patterns: ['label_bot/triage_labels.py']
+
+  - labels: [review-labels]
+    patterns: ['label_bot/review_labels.py']
 
   - labels: [wildcard-labels]
     patterns: ['label_bot/wildcard_labels.py']
@@ -49,6 +52,7 @@ colors:
     rejected: '#f7c7be'
     approved: '#beed6d'
     low: '#dddddd'
+    bot: '#000000'
 
 labels:
 - name: bug
@@ -94,6 +98,10 @@ labels:
 - name: triage-labels
   color: subcategory
   description: Triage label library.
+
+- name: review-labels
+  color: subcategory
+  description: Review label library.
 
 - name: wildcard-labels
   color: subcategory
@@ -154,3 +162,11 @@ labels:
 - name: rejected
   color: rejected
   description: The pull request is rejected for the stated reasons.
+
+- name: skip-triage
+  color: bot
+  description: Tells bot to not tag a new issue with 'triage'.
+
+- name: skip-review
+  color: bot
+  description: Tells bot to not tag a reviews with 'needs-review'.

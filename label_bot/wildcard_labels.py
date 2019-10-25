@@ -33,7 +33,6 @@ def get_labels(rules, files, flags):
                 for index, low in enumerate(lows):
                     if low not in add_labels:
                         add_labels[low] = names[index]
-                break
 
     remove_labels = {}
     for label in rules:
@@ -47,7 +46,7 @@ def get_labels(rules, files, flags):
 
 
 async def wildcard_labels(event, gh, config):
-    """Label issues by files that are changed."""
+    """Label issues by files that have changed."""
 
     rules = config.get('rules', [])
     if rules:
