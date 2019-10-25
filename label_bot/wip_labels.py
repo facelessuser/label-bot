@@ -37,7 +37,7 @@ async def wip(event, gh, config):
         event.data['pull_request']['statuses_url'],
         data={
             "state": "pending" if wip else "success",
-            "target_url": "https://github.com/isaac-muse/do-not-merge",
+            "target_url": "https://github.com/gir-bot/label-bot",
             "description": "Work in progress" if wip else "Ready for review",
             "context": "wip"
         }
