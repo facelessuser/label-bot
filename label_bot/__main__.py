@@ -12,7 +12,7 @@ from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
 from . import wip_labels
 from . import wildcard_labels
-from . import label_mgr
+from . import sync_labels
 from . import triage_labels
 from . import review_labels
 try:
@@ -106,7 +106,7 @@ async def push(event, gh, *args, **kwargs):
     """Handle push events on master."""
 
     config = await get_config(gh, event, event.data['after'])
-    await label_mgr.run(event, gh, config)
+    await sync_labels.run(event, gh, config)
 
 
 @routes.post("/")

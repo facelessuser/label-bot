@@ -24,8 +24,8 @@ rules:
   - labels: [wildcard-labels]
     patterns: ['label_bot/wildcard_labels.py']
 
-  - labels: [label-mgr]
-    patterns: ['label_bot/label_mgr.py']
+  - labels: [sync-labels]
+    patterns: ['label_bot/sync_labels.py']
 
 # WIP
 
@@ -87,13 +87,14 @@ labels:
   color: category
   description: Related to documentation.
 
-- name: label-mgr
+- name: sync-labels
+  renamed: label-mgr
   color: subcategory
-  description: Label manager library.
+  description: Sync labels library.
 
 - name: wip-labels
   color: subcategory
-  description: WIP label library.
+  description: WIP labels library.
 
 - name: triage-labels
   color: subcategory
@@ -105,7 +106,7 @@ labels:
 
 - name: wildcard-labels
   color: subcategory
-  description: Wildcard label library.
+  description: Wildcard labels library.
 
 - name: more-info-needed
   color: pending
