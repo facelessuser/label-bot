@@ -2,6 +2,8 @@
 from gidgethub import sansio
 from collections import namedtuple
 import re
+import traceback
+import sys
 
 RE_VALID_COLOR = re.compile('#[a-fA-F0-9]{6}')
 
@@ -39,11 +41,14 @@ def _parse_colors(config):
 
     colors = {}
     for name, color in config.get('colors', {}).items():
-        _validate_color(color)
-        _validate_str(name)
-        if name in colors:
-            raise ValueError("The name '{}' is already present in the color list".format(name))
-        colors[name] = color[1:]
+        try:
+            _validate_color(color)
+            _validate_str(name)
+            if name in colors:
+                raise ValueError("The name '{}' is already present in the color list".format(name))
+            colors[name] = color[1:]
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
     return colors
 
 
@@ -82,22 +87,28 @@ def _parse_labels(config):
     seen = set()
     colors = _parse_colors(config)
     for value in config.get('labels', {}):
-        name = value['name']
-        _validate_str(name)
-        value['color'] = _resolve_color(value['color'], colors)
-        if 'renamed' in value:
-            _validate_str(value['renamed'])
-        if 'description' in value and not isinstance(value['description'], str):
-            raise ValueError("Description for '{}' should be of type str".format(name))
-        if name.lower() in seen:
-            raise ValueError("The name '{}' is already present in the label list".format(name))
-        seen.add(name.lower())
-        labels.append(value)
+        try:
+            name = value['name']
+            _validate_str(name)
+            value['color'] = _resolve_color(value['color'], colors)
+            if 'renamed' in value:
+                _validate_str(value['renamed'])
+            if 'description' in value and not isinstance(value['description'], str):
+                raise ValueError("Description for '{}' should be of type str".format(name))
+            if name.lower() in seen:
+                raise ValueError("The name '{}' is already present in the label list".format(name))
+            seen.add(name.lower())
+            labels.append(value)
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
 
     ignores = set()
     for name in config.get('ignores', []):
-        _validate_str(name)
-        ignores.add(name.lower())
+        try:
+            _validate_str(name)
+            ignores.add(name.lower())
+        except Exception:
+            pass
 
     return labels, ignores
 

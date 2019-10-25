@@ -1,6 +1,8 @@
 """Wildcard labels."""
 from wcmatch import glob
 from gidgethub import sansio
+import traceback
+import sys
 
 
 def get_flags(config):
@@ -22,12 +24,21 @@ def get_labels(rules, files, flags):
     add_labels = {}
     for file in files:
         for label in rules:
-            names = label['labels']
-            lows = [n.lower() for n in names]
+            try:
+                names = label['labels']
+                lows = [n.lower() for n in names]
+            except Exception:
+                traceback.print_exc(file=sys.stdout)
+                continue
+
             match = False
             for pattern in label['patterns']:
-                if glob.globmatch(file, pattern, flags=flags):
-                    match = True
+                try:
+                    match = glob.globmatch(file, pattern, flags=flags)
+                except Exception:
+                    traceback.print_exc(file=sys.stdout)
+                    match = False
+                if match:
                     break
             if match:
                 for index, low in enumerate(lows):
@@ -36,8 +47,13 @@ def get_labels(rules, files, flags):
 
     remove_labels = {}
     for label in rules:
-        names = label['labels']
-        lows = [n.lower() for n in names]
+        try:
+            names = label['labels']
+            lows = [n.lower() for n in names]
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
+            continue
+
         for index, low in enumerate(lows):
             if low not in add_labels and low not in remove_labels:
                 remove_labels[low] = names[index]
