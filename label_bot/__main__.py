@@ -130,8 +130,7 @@ async def main(request):
         async with aiohttp.ClientSession() as session:
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
-            if event.data.get('action', '') not in ('labeled', 'unlabeled'):
-                await asyncio.sleep(1)
+            await asyncio.sleep(1)
             await router.dispatch(event, gh)
 
         return web.Response(status=200)
