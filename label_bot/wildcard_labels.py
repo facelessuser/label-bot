@@ -114,6 +114,20 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         await gh.put(url, data={'labels': labels}, accept=accept)
 
 
+async def pending(event, gh):
+    """Set task to pending."""
+
+    await gh.post(
+        event.data['pull_request']['statuses_url'],
+        data={
+            "state": "pending",
+            "target_url": "https://github.com/gir-bot/label-bot",
+            "description": "Pending",
+            "context": "{}/labels/auto-labels".format(os.environ.get("GH_BOT"))
+        }
+    )
+
+
 async def run(event, gh, config):
     """Run task."""
 

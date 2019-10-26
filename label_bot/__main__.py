@@ -50,7 +50,7 @@ async def get_config(gh, event, ref='master'):
     return config
 
 
-async def deferred_task(function, event):
+async def deferred_task(function, event, ref):
     """Defer the event work."""
 
     async with sem:
@@ -60,8 +60,8 @@ async def deferred_task(function, event):
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
             await asyncio.sleep(1)
-            config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
-            function(event, gh, config)
+            config = await get_config(gh, event, ref)
+            await function(event, gh, config)
 
 
 @router.register("pull_request", action="labeled")
@@ -84,30 +84,36 @@ async def pull_unlabeled(event, gh, request, *args, **kwargs):
 async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
-    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+    ref = event.data['pull_request']['head']['sha']
+    config = await get_config(gh, event, ref)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
-    await spawn(request, deferred_task(wildcard_labels.run, event))
+    await wildcard_labels.pending(event, gh)
+    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
 
 
 @router.register("pull_request", action="opened")
 async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
-    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+    ref = event.data['pull_request']['head']['sha']
+    config = await get_config(gh, event, ref)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
-    await spawn(request, deferred_task(wildcard_labels.run, event))
+    await wildcard_labels.pending(event, gh)
+    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
 
 
 @router.register("pull_request", action="synchronize")
 async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
-    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+    ref = event.data['pull_request']['head']['sha']
+    config = await get_config(gh, event, ref)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
-    await spawn(request, deferred_task(wildcard_labels.run, event))
+    await wildcard_labels.pending(event, gh)
+    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
 
 
 @router.register("issues", action="opened")
@@ -122,7 +128,8 @@ async def issues_opened(event, gh, request, *args, **kwargs):
 async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
-    await spawn(request, deferred_task(sync_labels.run, event))
+    await sync_labels.pending(event, gh)
+    await spawn(request, deferred_task(sync_labels.run, event, event.data['after']))
 
 
 @routes.post("/")

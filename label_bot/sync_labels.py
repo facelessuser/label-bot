@@ -169,6 +169,20 @@ async def sync(event, gh, config):
             await asyncio.sleep(1)
 
 
+async def pending(event, gh):
+    """Set task to pending."""
+
+    await gh.post(
+        event.data['repository']['statuses_url'],
+        data={
+            "state": "pending",
+            "target_url": "https://github.com/gir-bot/label-bot",
+            "description": "Pending",
+            "context": "{}/labels/sync".format(os.environ.get("GH_BOT"))
+        }
+    )
+
+
 async def run(event, gh, config):
     """Run task."""
 
