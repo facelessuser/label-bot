@@ -2,7 +2,7 @@
 ![License][license-image-mit]
 # Label Bot
 
-Test
+Whatever
 
 ## Overview
 
