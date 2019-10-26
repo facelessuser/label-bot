@@ -1,6 +1,7 @@
 """Main."""
 import asyncio
 from aiojobs.aiohttp import setup, spawn
+from bs4 import BeautifulSoup as bs  # noqa: N813
 import aiohttp
 import os
 import sys
@@ -51,6 +52,46 @@ async def get_config(gh, contents_url, ref='master'):
     return config
 
 
+async def deferred_comment_task(event):
+    """Defer handling of a comment."""
+
+    async with sem:
+        async with aiohttp.ClientSession() as session:
+            token = os.environ.get("GH_AUTH")
+            bot = os.environ.get("GH_BOT")
+            gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
+
+            comment = await gh.getitem(event.data['comment']['url'], accept=sansio.accept_format(media="html"))
+            soup = bs(comment['body_html'], 'html.parser')
+            el = soup.select_one('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot))
+            if el is not None:
+                sib = el.next_sibling
+                payload = {'repository': event.data['repository']}
+                if isinstance(sib, str) and sib.startswith(' retrigger'):
+                    issue = await gh.getitem(event.data['comment']['issue_url'])
+                    event_type = 'issues'
+                    key = 'issue'
+                    if 'pull_request' in issue:
+                        event_type = 'pull_request'
+                        key = 'pull_request'
+                        issue = await gh.getitem(issue['pull_request']['url'])
+                    payload[key] = issue
+
+                    await asyncio.sleep(1)
+                    if event_type == 'pull_request':
+                        event = util.Event(event_type, payload)
+                        config = await get_config(gh, event.contents_url, event.sha)
+                        await wip_labels.run(event, gh, config)
+                        await review_labels.run(event, gh, config)
+                        await wildcard_labels.pending(event, gh)
+                        await asyncio.sleep(1)
+                        await wildcard_labels.run(event, gh, config)
+                    else:
+                        event = util.Event(event_type, payload)
+                        config = await get_config(gh, event.contents_url)
+                        await triage_labels.run(event, gh, config)
+
+
 async def deferred_task(function, event, ref):
     """Defer the event work."""
 
@@ -69,7 +110,7 @@ async def deferred_task(function, event, ref):
 async def pull_labeled(event, gh, request, *args, **kwargs):
     """Handle pull request labeled event."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
@@ -78,7 +119,7 @@ async def pull_labeled(event, gh, request, *args, **kwargs):
 async def pull_unlabeled(event, gh, request, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
@@ -87,7 +128,7 @@ async def pull_unlabeled(event, gh, request, *args, **kwargs):
 async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
@@ -99,7 +140,7 @@ async def pull_reopened(event, gh, request, *args, **kwargs):
 async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
@@ -111,7 +152,7 @@ async def pull_opened(event, gh, request, *args, **kwargs):
 async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
@@ -123,7 +164,7 @@ async def pull_synchronize(event, gh, request, *args, **kwargs):
 async def issues_opened(event, gh, request, *args, **kwargs):
     """Handle issues open events."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     config = await get_config(gh, event.contents_url)
     await triage_labels.run(event, gh, config)
 
@@ -132,9 +173,16 @@ async def issues_opened(event, gh, request, *args, **kwargs):
 async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
-    event = util.Event(event)
+    event = util.Event(event.event, event.data)
     await sync_labels.pending(event, gh)
     await spawn(request, deferred_task(sync_labels.run, event, event.sha))
+
+
+@router.register('issue_comment', action="created")
+async def issue_comment_created(event, gh, request, *args, **kwargs):
+    """Handle issue comment created."""
+
+    await spawn(request, deferred_comment_task(event))
 
 
 @routes.post("/")

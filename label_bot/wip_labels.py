@@ -7,8 +7,14 @@ DEFAULT = ('wip', 'work in progress', 'work-in-progress')
 async def wip(event, gh, config):
     """Handle label events."""
 
+    print('-----wip-----')
+    print(event.labels)
+    print(event.state)
+    print(event.statuses_url)
+    print(event.sha)
     if event.state != 'open':
         return
+
 
     wip = False
     wip_list = set([label.lower() for label in config.get('wip', DEFAULT)])
