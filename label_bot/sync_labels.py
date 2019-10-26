@@ -62,7 +62,7 @@ def _find_label(labels, label, label_color, label_description):
         name = value['name']
         old_name = value.get('renamed', name)
 
-        if label.lower() != old_name.lower():
+        if label.lower() != old_name.lower() and label.lower() != name.lower():
             continue
 
         new_name = name
