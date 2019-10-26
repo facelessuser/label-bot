@@ -63,11 +63,15 @@ async def deferred_comment_task(event):
 
             comment = await gh.getitem(event.data['comment']['url'], accept=sansio.accept_format(media="html"))
             soup = bs(comment['body_html'], 'html.parser')
-            el = soup.select_one('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot))
-            if el is not None:
+            retriggered = False
+            resynced = False
+            for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
                 sib = el.next_sibling
-                payload = {'repository': event.data['repository']}
-                if isinstance(sib, str) and sib.startswith(' retrigger'):
+                if not isinstance(sib, str):
+                    continue
+                if not retriggered and sib.startswith(' retrigger'):
+                    payload = {'repository': event.data['repository']}
+                    retriggered = True
                     issue = await gh.getitem(event.data['comment']['issue_url'])
                     event_type = 'issues'
                     key = 'issue'
@@ -90,6 +94,17 @@ async def deferred_comment_task(event):
                         event = util.Event(event_type, payload)
                         config = await get_config(gh, event.contents_url)
                         await triage_labels.run(event, gh, config)
+                elif not resynced and sib.startswith(' resync'):
+                    resynced = True
+                    branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
+                    payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
+                    event = util.Event('push', payload)
+                    config = await get_config(gh, event.contents_url)
+                    await sync_labels.run(event, gh, config)
+
+                if resynced and retriggered:
+                    break
+            el = soup.select_one('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot))
 
 
 async def deferred_task(function, event, ref):
