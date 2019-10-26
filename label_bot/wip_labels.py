@@ -7,21 +7,21 @@ DEFAULT = ('wip', 'work in progress', 'work-in-progress')
 async def wip(event, gh, config):
     """Handle label events."""
 
-    if event.data['pull_request']['state'] != 'open':
+    if event.state != 'open':
         return
 
     wip = False
     wip_list = set([label.lower() for label in config.get('wip', DEFAULT)])
 
     # Grab the labels in this issue event.
-    for label in event.data['pull_request']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name in wip_list:
+    for name in event.labels:
+        if name.lower() in wip_list:
             wip = True
             break
 
     await gh.post(
-        event.data['pull_request']['statuses_url'],
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "pending" if wip else "success",
             "target_url": "https://github.com/gir-bot/label-bot",
@@ -42,7 +42,8 @@ async def run(event, gh, config):
 
     if fail:
         await gh.post(
-            event.data['pull_request']['statuses_url'],
+            event.statuses_url,
+            {'sha': event.sha},
             data={
                 "state": "failure",
                 "target_url": "https://github.com/gir-bot/label-bot",

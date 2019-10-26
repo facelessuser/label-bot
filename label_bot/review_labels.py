@@ -16,13 +16,13 @@ async def review(event, gh, config):
     skip.add(review_label.lower())
 
     # If the label is already present, or the skip label is present, then there is nothing to do.
-    for label in event.data['pull_request']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name == skip:
+    for name in event.labels:
+        if name.lower() == skip:
             return
 
     await gh.post(
-        event.data['pull_request']['issue_url'] + '/labels',
+        event.issue_labels_url,
+        {'number': event.number},
         data={'labels': [review_label]},
         accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
     )
@@ -38,7 +38,8 @@ async def run(event, gh, config):
         success = False
 
     await gh.post(
-        event.data['pull_request']['statuses_url'],
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "success" if success else "failure",
             "target_url": "https://github.com/gir-bot/label-bot",

@@ -121,19 +121,18 @@ async def sync(event, gh, config):
     labels, ignores = _parse_labels(config)
     delete = config.get('delete_labels', False)
     updated = set()
-    label_url = event.data['repository']['labels_url']
     accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
 
     # No labels defined, assume this has not been configured
     if not labels:
         return
 
-    async for label in gh.getiter(label_url, accept=accept):
+    async for label in gh.getiter(event.labels_url, accept=accept):
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
             await gh.patch(
-                label_url,
+                event.label_url,
                 {'name': edit.old},
                 data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
                 accept=accept
@@ -145,7 +144,7 @@ async def sync(event, gh, config):
             if edit is None and delete and label['name'].lower() not in ignores:
                 print('    Deleting {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
                 await gh.delete(
-                    label_url,
+                    event.label_url,
                     {'name': label['name']},
                     accept=accept
                 )
@@ -162,7 +161,7 @@ async def sync(event, gh, config):
         if name not in updated:
             print('    Creating {}: #{} "{}"'.format(name, color, description))
             await gh.post(
-                label_url,
+                event.labels_url,
                 data={'name': name, 'color': color, 'description': description},
                 accept=accept
             )
@@ -173,8 +172,8 @@ async def pending(event, gh):
     """Set task to pending."""
 
     await gh.post(
-        event.data['repository']['statuses_url'],
-        {'sha': event.data['after']},
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "pending",
             "target_url": "https://github.com/gir-bot/label-bot",
@@ -194,8 +193,8 @@ async def run(event, gh, config):
         success = False
 
     await gh.post(
-        event.data['repository']['statuses_url'],
-        {'sha': event.data['after']},
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "success" if success else "failure",
             "target_url": "https://github.com/gir-bot/label-bot",

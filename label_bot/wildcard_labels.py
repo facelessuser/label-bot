@@ -78,11 +78,8 @@ async def get_changed_files(event, gh):
 
     files = []
     compare = await gh.getitem(
-        event.data['repository']['compare_url'],
-        {
-            'base': event.data['pull_request']['base']['label'],
-            'head': event.data['pull_request']['head']['label']
-        }
+        event.compare_url,
+        {'base': event.base, 'head': event.head}
     )
     for file in compare['files']:
         files.append(file['filename'])
@@ -93,11 +90,8 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
     """Update issue labels."""
 
     labels = []
-    url = event.data['pull_request']['issue_url'] + '/labels'
-    accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
     changed = False
-    for label in event.data['pull_request']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16')
+    for name in event.labels:
         low = name.lower()
         if low not in remove_labels:
             labels.append(name)
@@ -111,14 +105,20 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         changed = True
         labels.extend(new_labels)
     if changed:
-        await gh.put(url, data={'labels': labels}, accept=accept)
+        await gh.put(
+            event.issue_labels_url,
+            {'number': event.number},
+            data={'labels': labels},
+            accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        )
 
 
 async def pending(event, gh):
     """Set task to pending."""
 
     await gh.post(
-        event.data['pull_request']['statuses_url'],
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "pending",
             "target_url": "https://github.com/gir-bot/label-bot",
@@ -138,7 +138,8 @@ async def run(event, gh, config):
         success = False
 
     await gh.post(
-        event.data['pull_request']['statuses_url'],
+        event.statuses_url,
+        {'sha': event.sha},
         data={
             "state": "success" if success else "failure",
             "target_url": "https://github.com/gir-bot/label-bot",

@@ -13,7 +13,8 @@ async def run(event, gh, config):
 
     if not success:
         gh.post(
-            event.data['issue']['comments_url'],
+            event.comments_url,
+            {'number': event.number},
             data={'body': 'Oops! It appears I am having difficulty marking this issue for triage.'}
         )
 
@@ -31,9 +32,8 @@ async def triage(event, gh, config):
     skip.add(triage_label.lower())
 
     # If the label is already present, or the skip label is present, then there is nothing to do.
-    for label in event.data['issue']['labels']:
-        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16').lower()
-        if name == skip:
+    for name in event.labels:
+        if name.lower() == skip:
             return
 
     await gh.post(

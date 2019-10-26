@@ -16,6 +16,7 @@ from . import wildcard_labels
 from . import sync_labels
 from . import triage_labels
 from . import review_labels
+from . import util
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -30,12 +31,12 @@ cache = cachetools.LRUCache(maxsize=500)
 sem = asyncio.Semaphore(1)
 
 
-async def get_config(gh, event, ref='master'):
+async def get_config(gh, contents_url, ref='master'):
     """Get label configuration file."""
 
     try:
         result = await gh.getitem(
-            event.data['repository']['contents_url'] + '{?ref}',
+            contents_url,
             {
                 'path': '.github/labels.yml',
                 'ref': ref
@@ -68,7 +69,8 @@ async def deferred_task(function, event, ref):
 async def pull_labeled(event, gh, request, *args, **kwargs):
     """Handle pull request labeled event."""
 
-    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
 
@@ -76,7 +78,8 @@ async def pull_labeled(event, gh, request, *args, **kwargs):
 async def pull_unlabeled(event, gh, request, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
-    config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
 
@@ -84,43 +87,44 @@ async def pull_unlabeled(event, gh, request, *args, **kwargs):
 async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
-    ref = event.data['pull_request']['head']['sha']
-    config = await get_config(gh, event, ref)
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
+    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
 
 
 @router.register("pull_request", action="opened")
 async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
-    ref = event.data['pull_request']['head']['sha']
-    config = await get_config(gh, event, ref)
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
+    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
 
 
 @router.register("pull_request", action="synchronize")
 async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
-    ref = event.data['pull_request']['head']['sha']
-    config = await get_config(gh, event, ref)
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, ref))
+    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
 
 
 @router.register("issues", action="opened")
 async def issues_opened(event, gh, request, *args, **kwargs):
     """Handle issues open events."""
 
-    config = await get_config(gh, event)
+    event = util.Event(event)
+    config = await get_config(gh, event.contents_url)
     await triage_labels.run(event, gh, config)
 
 
@@ -128,8 +132,9 @@ async def issues_opened(event, gh, request, *args, **kwargs):
 async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
+    event = util.Event(event)
     await sync_labels.pending(event, gh)
-    await spawn(request, deferred_task(sync_labels.run, event, event.data['after']))
+    await spawn(request, deferred_task(sync_labels.run, event, event.sha))
 
 
 @routes.post("/")
