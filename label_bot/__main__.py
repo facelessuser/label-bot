@@ -8,6 +8,7 @@ import sys
 import cachetools
 import traceback
 import yaml
+import json
 import base64
 from aiohttp import web
 from gidgethub import routing, sansio
@@ -34,6 +35,11 @@ sem = asyncio.Semaphore(1)
 
 async def get_config(gh, contents_url, ref='master'):
     """Get label configuration file."""
+
+    print('--ref--')
+    print(ref)
+    print(type(ref))
+    print(contents_url)
 
     try:
         result = await gh.getitem(
@@ -188,6 +194,9 @@ async def issues_opened(event, gh, request, *args, **kwargs):
 async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
+    print('-----push-----')
+    print(event.event)
+    print(json.dumps(event.data))
     event = util.Event(event.event, event.data)
     await sync_labels.pending(event, gh)
     await spawn(request, deferred_task(sync_labels.run, event, event.sha))

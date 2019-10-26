@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.1.0
+
 ## 1.0.1
 
 - **Fix**: Fix issues with rate limit abuse. Long running tasks should be marked pending and then deferred. Also, with
