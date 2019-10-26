@@ -96,8 +96,8 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
     url = event.data['pull_request']['issue_url'] + '/labels'
     accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
     changed = False
-    async for label in gh.getiter(url, accept=accept):
-        name = label['name']
+    for label in event.data['pull_request']['labels']:
+        name = label['name'].encode('utf-16', 'surrogatepass').decode('utf-16')
         low = name.lower()
         if low not in remove_labels:
             labels.append(name)
