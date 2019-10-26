@@ -174,6 +174,7 @@ async def pending(event, gh):
 
     await gh.post(
         event.data['repository']['statuses_url'],
+        {'sha': event.data['after']},
         data={
             "state": "pending",
             "target_url": "https://github.com/gir-bot/label-bot",
