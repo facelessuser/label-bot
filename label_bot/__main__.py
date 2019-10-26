@@ -1,5 +1,6 @@
 """Main."""
 import asyncio
+from aiojobs.aiohttp import setup, spawn
 import aiohttp
 import os
 import sys
@@ -26,6 +27,8 @@ router = routing.Router()
 routes = web.RouteTableDef()
 cache = cachetools.LRUCache(maxsize=500)
 
+sem = asyncio.Semaphore(1)
+
 
 async def get_config(gh, event, ref='master'):
     """Get label configuration file."""
@@ -47,8 +50,22 @@ async def get_config(gh, event, ref='master'):
     return config
 
 
+async def deferred_task(function, event):
+    """Defer the event work."""
+
+    async with sem:
+        async with aiohttp.ClientSession() as session:
+            token = os.environ.get("GH_AUTH")
+            bot = os.environ.get("GH_BOT")
+            gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
+
+            await asyncio.sleep(1)
+            config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
+            function(event, gh, config)
+
+
 @router.register("pull_request", action="labeled")
-async def pull_labeled(event, gh, *args, **kwargs):
+async def pull_labeled(event, gh, request, *args, **kwargs):
     """Handle pull request labeled event."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
@@ -56,7 +73,7 @@ async def pull_labeled(event, gh, *args, **kwargs):
 
 
 @router.register("pull_request", action="unlabeled")
-async def pull_unlabeled(event, gh, *args, **kwargs):
+async def pull_unlabeled(event, gh, request, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
@@ -64,37 +81,37 @@ async def pull_unlabeled(event, gh, *args, **kwargs):
 
 
 @router.register("pull_request", action="reopened")
-async def pull_reopened(event, gh, *args, **kwargs):
+async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wip_labels.run(event, gh, config)
-    await wildcard_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
+    await spawn(request, deferred_task(wildcard_labels.run, event))
 
 
 @router.register("pull_request", action="opened")
-async def pull_opened(event, gh, *args, **kwargs):
+async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wip_labels.run(event, gh, config)
-    await wildcard_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
+    await spawn(request, deferred_task(wildcard_labels.run, event))
 
 
 @router.register("pull_request", action="synchronize")
-async def pull_synchronize(event, gh, *args, **kwargs):
+async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
     config = await get_config(gh, event, event.data['pull_request']['head']['sha'])
     await wip_labels.run(event, gh, config)
-    await wildcard_labels.run(event, gh, config)
     await review_labels.run(event, gh, config)
+    await spawn(request, deferred_task(wildcard_labels.run, event))
 
 
 @router.register("issues", action="opened")
-async def issues_opened(event, gh, *args, **kwargs):
+async def issues_opened(event, gh, request, *args, **kwargs):
     """Handle issues open events."""
 
     config = await get_config(gh, event)
@@ -102,11 +119,10 @@ async def issues_opened(event, gh, *args, **kwargs):
 
 
 @router.register('push', ref='refs/heads/master')
-async def push(event, gh, *args, **kwargs):
+async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
-    config = await get_config(gh, event, event.data['after'])
-    await sync_labels.run(event, gh, config)
+    await spawn(request, deferred_task(sync_labels.run, event))
 
 
 @routes.post("/")
@@ -127,11 +143,12 @@ async def main(request):
         if event.event == "ping":
             return web.Response(status=200)
 
+        # Handle the event
         async with aiohttp.ClientSession() as session:
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
             await asyncio.sleep(1)
-            await router.dispatch(event, gh)
+            await router.dispatch(event, gh, request)
 
         return web.Response(status=200)
     except Exception:
@@ -142,6 +159,8 @@ async def main(request):
 if __name__ == "__main__":
     app = web.Application()
     app.add_routes(routes)
+    setup(app)
+
     port = os.environ.get("PORT")
     if port is not None:
         port = int(port)

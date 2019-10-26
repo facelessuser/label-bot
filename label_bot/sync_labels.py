@@ -1,4 +1,5 @@
 """Label syncing."""
+import asyncio
 from gidgethub import sansio
 from collections import namedtuple
 import os
@@ -139,6 +140,7 @@ async def sync(event, gh, config):
             )
             updated.add(edit.old)
             updated.add(edit.new)
+            await asyncio.sleep(1)
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
                 print('    Deleting {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
@@ -147,6 +149,7 @@ async def sync(event, gh, config):
                     {'name': label['name']},
                     accept=accept
                 )
+                await asyncio.sleep(1)
             else:
                 print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
             updated.add(label['name'])
@@ -163,6 +166,7 @@ async def sync(event, gh, config):
                 data={'name': name, 'color': color, 'description': description},
                 accept=accept
             )
+            await asyncio.sleep(1)
 
 
 async def run(event, gh, config):
