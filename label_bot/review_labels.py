@@ -20,6 +20,8 @@ async def review(event, gh, config):
         if name.lower() == skip:
             return
 
+    event.labels.append(review_label)
+
     await gh.post(
         event.issue_labels_url,
         {'number': event.number},

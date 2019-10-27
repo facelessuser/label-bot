@@ -35,7 +35,7 @@ sem = asyncio.Semaphore(1)
 RE_COMMANDS = re.compile(
     r'''(?x)
     [ ]+(?:
-        (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage)) |
+        (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage|all)) |
         (?P<sync>sync[ ]+labels)
     )\b
     ''',
@@ -99,8 +99,11 @@ async def deferred_comment_task(event):
                         issue = await gh.getitem(issue['pull_request']['url'])
                     payload[key] = issue
                     action = m.group('retrigger_task')
-                    if action == 'triage' and key == 'issue':
+
+                    if action in ('triage', 'all') and key == 'issue':
                         module = triage_labels
+                    elif action == 'all' and key == 'pull_request':
+                        module = handle_pull_actions
                     elif action == 'review' and key == 'pull_request':
                         module = review_labels
                     elif action == 'wip' and key == 'pull_request':

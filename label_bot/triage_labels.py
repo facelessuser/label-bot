@@ -36,6 +36,8 @@ async def triage(event, gh, config):
         if name.lower() == skip:
             return
 
+    event.labels.append(triage_label)
+
     await gh.post(
         event.data['issue']['labels_url'],
         data={'labels': [triage_label]},

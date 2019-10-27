@@ -105,6 +105,8 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
         changed = True
         labels.extend(new_labels)
     if changed:
+        event.labels.clear()
+        event.labels.extend(labels)
         await gh.put(
             event.issue_labels_url,
             {'number': event.number},
