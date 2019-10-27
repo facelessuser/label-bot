@@ -25,7 +25,7 @@ async def review(event, gh, config):
 
     # If the label is already present, or the skip label is present, then there is nothing to do.
     for name in current_labels:
-        if name.lower() == skip:
+        if name.lower() in skip:
             return
 
     current_labels.append(review_label)
