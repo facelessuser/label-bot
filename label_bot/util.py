@@ -27,7 +27,7 @@ class Event:
         elif self.event == 'issues':
             self.sha = 'master'
             self.state = data['issue']['state']
-            self.labels = [self.decode_label(label) for label in data['issue']['labels']]
+            self.labels = [self.decode_label(label['name']) for label in data['issue']['labels']]
             self.base = None
             self.head = None
             self.number = str(data['issue']['number'])
