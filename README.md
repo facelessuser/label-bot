@@ -33,7 +33,13 @@ available bot on the marketplace.
    documentation.
 3. Setup a webhook in your repository. Point the URL to your running app. Ensure it sends data via JSON. Use a
    token with high entropy and make sure it is used by your webhook and assigned to `GH_SECRET` in your app
-   environment. Lastly, make sure the webhook sends requests for `issues`, `push`, and `pull_request` events.
+   environment. Lastly, make sure the webhook sends requests for:
+
+    - `issues`: allows triage labels task to be sent events.
+    - `push`: , allows the repository label sync task to be sent events.
+    - `pull request`: allows the the WIP, review, and pull request auto label task to be sent events.
+    - `issue comments`: allows the ability to retrigger tasks via mentions to the bot through issues.
+
 4. If you are using a separate bot account to communicate with your repos, you may have to add the bot as a
    collaborator.
 
@@ -280,10 +286,6 @@ If you want to rerun all checks, you can ask it to run `all`:
 ```
 @gir-bot retrigger all
 ```
-
-It is advisable currently to either run one or all. Though the bot will accept multiple commands in a comment, and run
-them, they will all be independently dispatched at the same time without knowledge of changes each other are making.
-When running `all`, the share the knowledge. They are designed to be run together to reduce needed API calls.
 
 Available checks that can be retriggered are: `wip`, `review`, `triage`, and `auto-label`. `triage` cannot be run in
 pull requests, and the other are not run outside of pull requests.
