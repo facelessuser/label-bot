@@ -149,7 +149,7 @@ async def deferred_comment_task(event):
                         )
                     else:
                         await gh.post(
-                            event.data[key]['issue_url' if etype == 'pull_request' else 'url'] + '/reactions',
+                            event.data[etype]['issue_url' if etype == 'pull_request' else 'url'] + '/reactions',
                             data={'content': 'eyes'},
                             accept=','.join(
                                 [sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json']
