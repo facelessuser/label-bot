@@ -46,6 +46,7 @@ RE_COMMANDS = re.compile(
 async def get_config(gh, contents_url, ref='master'):
     """Get label configuration file."""
 
+    await asyncio.sleep(1)
     try:
         result = await gh.getitem(
             contents_url,
@@ -145,7 +146,6 @@ async def deferred_task(function, event, ref):
             bot = os.environ.get("GH_BOT")
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
-            await asyncio.sleep(1)
             config = await get_config(gh, event.contents_url, ref)
             await function(event, gh, config)
 
@@ -165,6 +165,9 @@ async def pull_labeled(event, gh, request, *args, **kwargs):
     """Handle pull request labeled event."""
 
     event = util.Event(event.event, event.data)
+    if event.state != "open":
+        return
+
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
@@ -174,6 +177,9 @@ async def pull_unlabeled(event, gh, request, *args, **kwargs):
     """Handle pull request unlabeled event."""
 
     event = util.Event(event.event, event.data)
+    if event.state != "open":
+        return
+
     config = await get_config(gh, event.contents_url, event.sha)
     await wip_labels.run(event, gh, config)
 
@@ -183,7 +189,6 @@ async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
     event = util.Event(event.event, event.data)
-    await wildcard_labels.pending(event, gh)
     await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
@@ -192,7 +197,6 @@ async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
     event = util.Event(event.event, event.data)
-    await wildcard_labels.pending(event, gh)
     await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
@@ -201,7 +205,6 @@ async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
     event = util.Event(event.event, event.data)
-    await wildcard_labels.pending(event, gh)
     await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
@@ -252,7 +255,6 @@ async def main(request):
         async with aiohttp.ClientSession() as session:
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
-            await asyncio.sleep(1)
             await router.dispatch(event, gh, request)
 
         return web.Response(status=200)
