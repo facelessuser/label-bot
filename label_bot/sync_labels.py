@@ -62,8 +62,11 @@ def _find_label(labels, label, label_color, label_description):
         name = value['name']
         old_name = value.get('renamed', name)
 
-        if label.lower() != old_name.lower() and label.lower() != name.lower():
-            continue
+        if label.lower() != old_name.lower():
+            if label.lower() == name.lower():
+                old_name = name
+            else:
+                continue
 
         new_name = name
         color = value['color']
@@ -73,7 +76,7 @@ def _find_label(labels, label, label_color, label_description):
         # Editing an existing label
         if (
             label.lower() == old_name.lower() and
-            (label_color.lower() != color.lower() or label_description != description)
+            (label_color.lower() != color.lower() or label_description != description or label != old_name)
         ):
             modified = True
         edit = LabelEdit(old_name, new_name, color, description, modified=modified)

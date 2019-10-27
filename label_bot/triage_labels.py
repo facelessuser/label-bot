@@ -13,7 +13,7 @@ async def run(event, gh, config):
 
     if not success:
         gh.post(
-            event.comments_url,
+            event.issues_comments_url,
             {'number': event.number},
             data={'body': 'Oops! It appears I am having difficulty marking this issue for triage.'}
         )

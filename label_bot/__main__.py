@@ -1,6 +1,6 @@
 """Main."""
 import asyncio
-from aiojobs.aiohttp import setup, spawn
+from aiojobs.aiohttp import setup, spawn, get_scheduler_from_app
 from bs4 import BeautifulSoup as bs  # noqa: N813
 import aiohttp
 import os
@@ -8,8 +8,8 @@ import sys
 import cachetools
 import traceback
 import yaml
-import json
 import base64
+import re
 from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
@@ -32,14 +32,19 @@ cache = cachetools.LRUCache(maxsize=500)
 
 sem = asyncio.Semaphore(1)
 
+RE_COMMANDS = re.compile(
+    r'''(?x)
+    [ ]+(?:
+        (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage)) |
+        (?P<sync>sync[ ]+labels)
+    )\b
+    ''',
+    re.I
+)
+
 
 async def get_config(gh, contents_url, ref='master'):
     """Get label configuration file."""
-
-    print('--ref--')
-    print(ref)
-    print(type(ref))
-    print(contents_url)
 
     try:
         result = await gh.getitem(
@@ -69,15 +74,22 @@ async def deferred_comment_task(event):
 
             comment = await gh.getitem(event.data['comment']['url'], accept=sansio.accept_format(media="html"))
             soup = bs(comment['body_html'], 'html.parser')
-            retriggered = False
-            resynced = False
+
             for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
+                payload = None
+                pending = False
+                module = None
+
                 sib = el.next_sibling
                 if not isinstance(sib, str):
                     continue
-                if not retriggered and sib.startswith(' retrigger'):
+
+                m = RE_COMMANDS.match(sib)
+                if m is None:
+                    continue
+
+                if m.group('retrigger'):
                     payload = {'repository': event.data['repository']}
-                    retriggered = True
                     issue = await gh.getitem(event.data['comment']['issue_url'])
                     event_type = 'issues'
                     key = 'issue'
@@ -86,31 +98,39 @@ async def deferred_comment_task(event):
                         key = 'pull_request'
                         issue = await gh.getitem(issue['pull_request']['url'])
                     payload[key] = issue
-
-                    await asyncio.sleep(1)
-                    if event_type == 'pull_request':
-                        event = util.Event(event_type, payload)
-                        config = await get_config(gh, event.contents_url, event.sha)
-                        await wip_labels.run(event, gh, config)
-                        await review_labels.run(event, gh, config)
-                        await wildcard_labels.pending(event, gh)
-                        await asyncio.sleep(1)
-                        await wildcard_labels.run(event, gh, config)
+                    action = m.group('retrigger_task')
+                    if action == 'triage' and key == 'issue':
+                        module = triage_labels
+                    elif action == 'review' and key == 'pull_request':
+                        module = review_labels
+                    elif action == 'wip' and key == 'pull_request':
+                        module = wip_labels
+                    elif action == 'auto-labels' and key == 'pull_request':
+                        pending = True
+                        module = wildcard_labels
                     else:
-                        event = util.Event(event_type, payload)
-                        config = await get_config(gh, event.contents_url)
-                        await triage_labels.run(event, gh, config)
-                elif not resynced and sib.startswith(' resync'):
-                    resynced = True
+                        continue
+
+                elif m.group('sync'):
+                    event_type = 'push'
                     branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
                     payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
-                    event = util.Event('push', payload)
-                    config = await get_config(gh, event.contents_url)
-                    await sync_labels.run(event, gh, config)
+                    pending = True
+                    module = sync_labels
 
-                if resynced and retriggered:
-                    break
-            el = soup.select_one('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot))
+                else:
+                    continue
+
+                await gh.post(
+                    event.data['repository']['issue_comment_url'] + '/reactions',
+                    {'number': str(event.data['comment']['id'])},
+                    data={'content': 'eyes'},
+                    accept=','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
+                )
+                event = util.Event(event_type, payload)
+                if pending:
+                    await module.pending(event, gh)
+                await get_scheduler_from_app(app).spawn(deferred_task(module.run, event, event.sha))
 
 
 async def deferred_task(function, event, ref):
@@ -123,8 +143,18 @@ async def deferred_task(function, event, ref):
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
             await asyncio.sleep(1)
-            config = await get_config(gh, event, ref)
+            config = await get_config(gh, event.contents_url, ref)
             await function(event, gh, config)
+
+
+async def handle_pull_actions(event, gh, config):
+    """Handle non label specific actions."""
+
+    await wip_labels.run(event, gh, config)
+    await review_labels.run(event, gh, config)
+    await wildcard_labels.pending(event, gh)
+    await asyncio.sleep(1)
+    await wildcard_labels.run(event, gh, config)
 
 
 @router.register("pull_request", action="labeled")
@@ -150,11 +180,8 @@ async def pull_reopened(event, gh, request, *args, **kwargs):
     """Handle pull reopened events."""
 
     event = util.Event(event.event, event.data)
-    config = await get_config(gh, event.contents_url, event.sha)
-    await wip_labels.run(event, gh, config)
-    await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
+    await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
 @router.register("pull_request", action="opened")
@@ -162,11 +189,8 @@ async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
     event = util.Event(event.event, event.data)
-    config = await get_config(gh, event.contents_url, event.sha)
-    await wip_labels.run(event, gh, config)
-    await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
+    await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
 @router.register("pull_request", action="synchronize")
@@ -174,11 +198,8 @@ async def pull_synchronize(event, gh, request, *args, **kwargs):
     """Handle pull synchronization events."""
 
     event = util.Event(event.event, event.data)
-    config = await get_config(gh, event.contents_url, event.sha)
-    await wip_labels.run(event, gh, config)
-    await review_labels.run(event, gh, config)
     await wildcard_labels.pending(event, gh)
-    await spawn(request, deferred_task(wildcard_labels.run, event, event.sha))
+    await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
 
 
 @router.register("issues", action="opened")
@@ -194,9 +215,6 @@ async def issues_opened(event, gh, request, *args, **kwargs):
 async def push(event, gh, request, *args, **kwargs):
     """Handle push events on master."""
 
-    print('-----push-----')
-    print(event.event)
-    print(json.dumps(event.data))
     event = util.Event(event.event, event.data)
     await sync_labels.pending(event, gh)
     await spawn(request, deferred_task(sync_labels.run, event, event.sha))
