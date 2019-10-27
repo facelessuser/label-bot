@@ -24,7 +24,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 router = routing.Router()
 routes = web.RouteTableDef()
