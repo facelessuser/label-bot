@@ -18,9 +18,8 @@ async def review(event, gh, config):
     skip.add(review_label.lower())
 
     quick = config.get('quick_labels', True)
-    print('----- review quick', str(quick))
     if quick:
-        current_labels = event.labels
+        current_labels = event.labels[:]
     else:
         current_labels = [x async for x in event.live_labels(gh)]
 
@@ -32,10 +31,6 @@ async def review(event, gh, config):
     current_labels.append(review_label)
     event.labels.clear()
     event.labels.extend(current_labels)
-
-    print('----- review_label')
-    print(current_labels)
-    print(event.labels)
 
     await gh.post(
         event.issue_labels_url,

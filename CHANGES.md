@@ -5,6 +5,7 @@
 - **FIX**: Fix regression with triage.
 - **FIX**: Fix triage message not posting on error.
 - **FIX**: Fix commands not being parsed in opening of an issue.
+- **FIX**: Handling of labels quickly across tasks executed at the same time.
 
 ## 1.1.0
 
