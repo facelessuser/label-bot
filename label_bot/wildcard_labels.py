@@ -92,10 +92,16 @@ async def update_issue_labels(event, gh, add_labels, remove_labels, quick):
     labels = []
     changed = False
 
+    print('----- wild quick', str(quick))
+
     if quick:
         current_labels = event.labels
     else:
         current_labels = [x async for x in event.live_labels(gh)]
+
+    print('----- wild labels')
+    print(current_labels)
+    print(event.labels)
 
     for name in current_labels:
         low = name.lower()
