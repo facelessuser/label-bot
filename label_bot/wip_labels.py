@@ -1,5 +1,7 @@
 """Handle work in progress labels."""
 import os
+import sys
+import traceback
 
 DEFAULT = ('wip', 'work in progress', 'work-in-progress')
 
@@ -45,6 +47,7 @@ async def run(event, gh, config):
         await wip(event, gh, config)
         fail = False
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         fail = True
 
     if fail:

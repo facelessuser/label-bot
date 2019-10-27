@@ -1,6 +1,8 @@
 """Review labels."""
 import os
 from gidgethub import sansio
+import traceback
+import sys
 
 
 async def review(event, gh, config):
@@ -45,6 +47,7 @@ async def run(event, gh, config):
         await review(event, gh, config)
         success = True
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         success = False
 
     await gh.post(

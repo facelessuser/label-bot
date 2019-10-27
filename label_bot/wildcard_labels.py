@@ -143,6 +143,7 @@ async def run(event, gh, config):
         await wildcard_labels(event, gh, config)
         success = True
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         success = False
 
     await gh.post(

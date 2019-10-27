@@ -1,5 +1,7 @@
 """Triage labels."""
 from gidgethub import sansio
+import traceback
+import sys
 
 
 async def run(event, gh, config):
@@ -9,10 +11,11 @@ async def run(event, gh, config):
         await triage(event, gh, config)
         success = True
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         success = False
 
     if not success:
-        gh.post(
+        await gh.post(
             event.issues_comments_url,
             {'number': event.number},
             data={'body': 'Oops! It appears I am having difficulty marking this issue for triage.'}

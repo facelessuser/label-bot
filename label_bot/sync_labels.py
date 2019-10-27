@@ -199,6 +199,7 @@ async def run(event, gh, config):
         await sync(event, gh, config)
         success = True
     except Exception:
+        traceback.print_exc(file=sys.stdout)
         success = False
 
     await gh.post(
