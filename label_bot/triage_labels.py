@@ -36,7 +36,7 @@ async def triage(event, gh, config):
 
     quick = config.get('quick_labels', True)
     if quick:
-        current_labels = event.labels
+        current_labels = event.labels[:]
     else:
         current_labels = [x async for x in event.live_labels(gh)]
 

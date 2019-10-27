@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1
+
+- **FIX**: Fix regression with triage.
+- **FIX**: Fix triage message not posting on error.
+- **FIX**: Fix commands not being parsed in opening of an issue.
+- **FIX**: Handling of labels quickly across tasks executed at the same time.
+
 ## 1.1.0
 
 - **NEW**: Allow re-triggering pull and issue tasks if something went wrong. This is done with commands in the issues.
