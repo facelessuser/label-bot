@@ -74,7 +74,13 @@ async def deferred_comment_task(event):
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
             reacted = False
 
-            comment = await gh.getitem(event.data['comment']['url'], accept=sansio.accept_format(media="html"))
+            if event.event == 'issue_comment':
+                etype = 'comment'
+            elif event.event == 'pull_request':
+                etype = 'pull_request'
+            else:
+                etype = 'issue'
+            comment = await gh.getitem(event.data[etype]['url'], accept=sansio.accept_format(media="html"))
             soup = bs(comment['body_html'], 'html.parser')
 
             for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
@@ -90,7 +96,7 @@ async def deferred_comment_task(event):
                 if m is None:
                     continue
 
-                if m.group('retrigger'):
+                if etype == 'comment' and m.group('retrigger'):
                     await asyncio.sleep(1)
                     payload = {'repository': event.data['repository']}
                     issue = await gh.getitem(event.data['comment']['issue_url'])
@@ -132,12 +138,23 @@ async def deferred_comment_task(event):
                     continue
 
                 if not reacted:
-                    await gh.post(
-                        event.data['repository']['issue_comment_url'] + '/reactions',
-                        {'number': str(event.data['comment']['id'])},
-                        data={'content': 'eyes'},
-                        accept=','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
-                    )
+                    if etype == 'comment':
+                        await gh.post(
+                            event.data['repository']['issue_comment_url'] + '/reactions',
+                            {'number': str(event.data['comment']['id'])},
+                            data={'content': 'eyes'},
+                            accept=','.join(
+                                [sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json']
+                            )
+                        )
+                    else:
+                        await gh.post(
+                            event.data[key]['issue_url' if etype == 'pull_request' else 'url'] + '/reactions',
+                            data={'content': 'eyes'},
+                            accept=','.join(
+                                [sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json']
+                            )
+                        )
                     reacted = True
 
                 new_event = util.Event(event_type, payload)
@@ -209,8 +226,9 @@ async def pull_reopened(event, gh, request, *args, **kwargs):
 async def pull_opened(event, gh, request, *args, **kwargs):
     """Handle pull opened events."""
 
-    event = util.Event(event.event, event.data)
-    await spawn(request, deferred_task(handle_pull_actions, event, event.sha))
+    e = util.Event(event.event, event.data)
+    await spawn(request, deferred_task(handle_pull_actions, e, e.sha))
+    await spawn(request, deferred_comment_task(event))
 
 
 @router.register("pull_request", action="synchronize")
@@ -225,9 +243,10 @@ async def pull_synchronize(event, gh, request, *args, **kwargs):
 async def issues_opened(event, gh, request, *args, **kwargs):
     """Handle issues open events."""
 
-    event = util.Event(event.event, event.data)
-    config = await get_config(gh, event.contents_url)
-    await triage_labels.run(event, gh, config)
+    e = util.Event(event.event, event.data)
+    config = await get_config(gh, e.contents_url)
+    await triage_labels.run(e, gh, config)
+    await spawn(request, deferred_comment_task(event))
 
 
 @router.register('push', ref='refs/heads/master')
