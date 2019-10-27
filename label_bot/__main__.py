@@ -72,6 +72,7 @@ async def deferred_comment_task(event):
             token = os.environ.get("GH_AUTH")
             bot = os.environ.get("GH_BOT")
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
+            reacted = False
 
             comment = await gh.getitem(event.data['comment']['url'], accept=sansio.accept_format(media="html"))
             soup = bs(comment['body_html'], 'html.parser')
@@ -90,6 +91,7 @@ async def deferred_comment_task(event):
                     continue
 
                 if m.group('retrigger'):
+                    await asyncio.sleep(1)
                     payload = {'repository': event.data['repository']}
                     issue = await gh.getitem(event.data['comment']['issue_url'])
                     event_type = 'issues'
@@ -119,6 +121,7 @@ async def deferred_comment_task(event):
                         continue
 
                 elif m.group('sync'):
+                    await asyncio.sleep(1)
                     event_type = 'push'
                     branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
                     payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
@@ -128,16 +131,19 @@ async def deferred_comment_task(event):
                 else:
                     continue
 
-                await gh.post(
-                    event.data['repository']['issue_comment_url'] + '/reactions',
-                    {'number': str(event.data['comment']['id'])},
-                    data={'content': 'eyes'},
-                    accept=','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
-                )
-                event = util.Event(event_type, payload)
+                if not reacted:
+                    await gh.post(
+                        event.data['repository']['issue_comment_url'] + '/reactions',
+                        {'number': str(event.data['comment']['id'])},
+                        data={'content': 'eyes'},
+                        accept=','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
+                    )
+                    reacted = True
+
+                new_event = util.Event(event_type, payload)
                 if pending:
-                    await pending(event, gh)
-                await get_scheduler_from_app(app).spawn(deferred_task(command, event, event.sha, live=live))
+                    await pending(new_event, gh)
+                await get_scheduler_from_app(app).spawn(deferred_task(command, new_event, new_event.sha, live=live))
 
 
 async def deferred_task(function, event, ref, live=False):
