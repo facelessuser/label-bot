@@ -78,8 +78,7 @@ async def deferred_comment_task(event):
 
             for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
                 payload = None
-                pending = False
-                module = None
+                pending = None
 
                 sib = el.next_sibling
                 if not isinstance(sib, str):
@@ -102,16 +101,16 @@ async def deferred_comment_task(event):
                     action = m.group('retrigger_task')
 
                     if action in ('triage', 'all') and key == 'issue':
-                        module = triage_labels
+                        command = triage_labels.run
                     elif action == 'all' and key == 'pull_request':
-                        module = handle_pull_actions
+                        command = handle_pull_actions
                     elif action == 'review' and key == 'pull_request':
-                        module = review_labels
+                        command = review_labels.run
                     elif action == 'wip' and key == 'pull_request':
-                        module = wip_labels
+                        command = wip_labels.run
                     elif action == 'auto-labels' and key == 'pull_request':
-                        pending = True
-                        module = wildcard_labels
+                        pending = wildcard_labels.pending
+                        command = wildcard_labels.run
                     else:
                         continue
 
@@ -119,8 +118,8 @@ async def deferred_comment_task(event):
                     event_type = 'push'
                     branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
                     payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
-                    pending = True
-                    module = sync_labels
+                    pending = sync_labels.pending
+                    command = sync_labels.run
 
                 else:
                     continue
@@ -133,8 +132,8 @@ async def deferred_comment_task(event):
                 )
                 event = util.Event(event_type, payload)
                 if pending:
-                    await module.pending(event, gh)
-                await get_scheduler_from_app(app).spawn(deferred_task(module.run, event, event.sha))
+                    await pending(event, gh)
+                await get_scheduler_from_app(app).spawn(deferred_task(command, event, event.sha))
 
 
 async def deferred_task(function, event, ref):
