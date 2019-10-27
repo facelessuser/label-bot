@@ -31,12 +31,20 @@ async def triage(event, gh, config):
     skip = set([label.lower() for label in config.get('triage_skip', ['skip-triage'])])
     skip.add(triage_label.lower())
 
+    quick = config.get('quick_labels', True)
+    if quick:
+        current_labels = event.labels
+    else:
+        current_labels = [x async for x in event.live_labels(gh)]
+
     # If the label is already present, or the skip label is present, then there is nothing to do.
-    for name in event.labels:
+    for name in current_labels:
         if name.lower() == skip:
             return
 
-    event.labels.append(triage_label)
+    current_labels.append(triage_label)
+    event.labels.clear()
+    event.labels.extend(current_labels)
 
     await gh.post(
         event.data['issue']['labels_url'],

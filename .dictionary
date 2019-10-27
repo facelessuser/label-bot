@@ -8,5 +8,9 @@ gir
 glob
 predefine
 repos
+resync
+retrigger
+retriggered
+retriggered
 webhook
 wildcard

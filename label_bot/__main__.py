@@ -79,6 +79,7 @@ async def deferred_comment_task(event):
             for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
                 payload = None
                 pending = None
+                live = False
 
                 sib = el.next_sibling
                 if not isinstance(sib, str):
@@ -105,10 +106,13 @@ async def deferred_comment_task(event):
                     elif action == 'all' and key == 'pull_request':
                         command = handle_pull_actions
                     elif action == 'review' and key == 'pull_request':
+                        live = True
                         command = review_labels.run
                     elif action == 'wip' and key == 'pull_request':
+                        live = True
                         command = wip_labels.run
                     elif action == 'auto-labels' and key == 'pull_request':
+                        live = True
                         pending = wildcard_labels.pending
                         command = wildcard_labels.run
                     else:
@@ -133,10 +137,10 @@ async def deferred_comment_task(event):
                 event = util.Event(event_type, payload)
                 if pending:
                     await pending(event, gh)
-                await get_scheduler_from_app(app).spawn(deferred_task(command, event, event.sha))
+                await get_scheduler_from_app(app).spawn(deferred_task(command, event, event.sha, live=live))
 
 
-async def deferred_task(function, event, ref):
+async def deferred_task(function, event, ref, live=False):
     """Defer the event work."""
 
     async with sem:
@@ -145,7 +149,11 @@ async def deferred_task(function, event, ref):
             bot = os.environ.get("GH_BOT")
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
 
+            # If we need to make sure the task is working with live issue labels, turn off quick labels.
             config = await get_config(gh, event.contents_url, ref)
+            if live:
+                config['quick_labels'] = False
+
             await function(event, gh, config)
 
 

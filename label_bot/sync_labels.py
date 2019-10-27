@@ -130,7 +130,13 @@ async def sync(event, gh, config):
     if not labels:
         return
 
+    count = 0
     async for label in gh.getiter(event.labels_url, accept=accept):
+
+        count += 1
+        if (count % 20) == 0:
+            await asyncio.sleep(1)
+
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))

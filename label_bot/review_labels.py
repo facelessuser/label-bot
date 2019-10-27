@@ -15,12 +15,20 @@ async def review(event, gh, config):
     skip = set([label.lower() for label in config.get('review_skip', ['skip-review'])])
     skip.add(review_label.lower())
 
+    quick = config.get('quick_labels', True)
+    if quick:
+        current_labels = event.labels
+    else:
+        current_labels = [x async for x in event.live_labels(gh)]
+
     # If the label is already present, or the skip label is present, then there is nothing to do.
-    for name in event.labels:
+    for name in current_labels:
         if name.lower() == skip:
             return
 
-    event.labels.append(review_label)
+    current_labels.append(review_label)
+    event.labels.clear()
+    event.labels.extend(current_labels)
 
     await gh.post(
         event.issue_labels_url,

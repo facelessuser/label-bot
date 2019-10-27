@@ -1,4 +1,6 @@
 """Utilities."""
+import asyncio
+from gidgethub import sansio
 
 
 class Event:
@@ -42,3 +44,19 @@ class Event:
         """Decode label."""
 
         return name.encode('utf-16', 'surrogatepass').decode('utf-16')
+
+    async def live_labels(self, gh):
+        """Get the current, live labels."""
+
+        count = 0
+        accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        async for label in gh.getiter(self.issue_labels_url, {'number': self.number}, accept=accept):
+
+            # Not sure how many get returned before it must page, so sleep for
+            # one second on the arbitrary value of 20. That is a lot of labels for
+            # one issue, so it is probably not going to trigger often.
+            count += 1
+            if (count % 20) == 0:
+                await asyncio.sleep(1)
+
+            yield label['name']
