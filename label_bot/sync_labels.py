@@ -141,7 +141,7 @@ async def sync(event, gh, config):
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
             await gh.patch(
-                event.label_url,
+                event.labels_url,
                 {'name': edit.old},
                 data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
                 accept=accept
@@ -153,7 +153,7 @@ async def sync(event, gh, config):
             if edit is None and delete and label['name'].lower() not in ignores:
                 print('    Deleting {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
                 await gh.delete(
-                    event.label_url,
+                    event.labels_url,
                     {'name': label['name']},
                     accept=accept
                 )
