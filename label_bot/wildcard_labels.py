@@ -1,4 +1,5 @@
 """Wildcard labels."""
+import asyncio
 from wcmatch import glob
 import traceback
 import sys
@@ -89,32 +90,37 @@ async def get_changed_files(event, gh):
 async def update_issue_labels(event, gh, add_labels, remove_labels):
     """Update issue labels."""
 
-    labels = []
-    changed = False
-
-    current_labels = [x async for x in event.live_labels(gh)]
-
-    for name in current_labels:
+    remove = []
+    async for name in event.live_labels(gh):
         low = name.lower()
         if low not in remove_labels:
-            labels.append(name)
             if low in add_labels:
                 del add_labels[low]
         else:
-            changed = True
+            remove.append(name)
 
-    new_labels = [label for label in add_labels.values()]
-    if new_labels:
-        changed = True
-        labels.extend(new_labels)
-    if changed:
-        event.labels.clear()
-        event.labels.extend(labels)
-        await gh.put(
+    add = [label for label in add_labels.values()]
+
+    if add:
+        await gh.post(
             event.issue_labels_url,
             {'number': event.number},
-            data={'labels': labels},
+            data={'labels': add},
             accept=util.LABEL_HEADER
+        )
+
+    count = 0
+    for label in remove:
+        count += 1
+        if (count % 2) == 0:
+            await asyncio.sleep(1)
+
+        await gh.delete(
+            await gh.delete(
+                event.issue_labels_url,
+                {'number': event.number, 'name': label},
+                accept=util.LABEL_HEADER
+            )
         )
 
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3
+
+- **FIX**: Internal cleanup for easier maintenance.
+- **FIX**: Wildcard labels should always get live labels. And should set labels and/or remove labels as required instead
+  of overwriting all labels. This will prevent any chance of accidentally remove unintended labels.
+
 ## 1.1.2
 
 - **FIX**: Bad default when `labels` key is not found in configuration file.

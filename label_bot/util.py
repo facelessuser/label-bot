@@ -38,7 +38,7 @@ class Event:
         self.branches_url = data['repository']['branches_url']
         self.issues_url = data['repository']['issues_url']
         self.issues_comments_url = self.issues_url + '/comments'
-        self.issue_labels_url = self.issues_url + '/labels'
+        self.issue_labels_url = self.issues_url + '/labels{/name}'
         self.statuses_url = data['repository']['statuses_url']
         self.compare_url = data['repository']['compare_url']
         self.labels_url = data['repository']['labels_url']

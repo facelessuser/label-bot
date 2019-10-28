@@ -12,10 +12,8 @@ from aiohttp import web
 from gidgethub import routing, sansio
 from gidgethub import aiohttp as gh_aiohttp
 from . import wip_labels
-from . import wildcard_labels
 from . import sync_labels
 from . import triage_labels
-from . import review_labels
 from . import commands
 from . import util
 try:
@@ -23,7 +21,7 @@ try:
 except ImportError:
     from yaml import Loader
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 router = routing.Router()
 routes = web.RouteTableDef()
