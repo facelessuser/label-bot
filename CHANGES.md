@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.2
+
+- **FIX**: Bad default when `labels` key is not found in configuration file.
+- **FIX**: Bad comparison in `triage` and `review` task when comparing labels.
+- **FIX**: Bad extraction of labels when extracting from `issues` event.
+
 ## 1.1.1
 
 - **FIX**: Fix regression with triage.
