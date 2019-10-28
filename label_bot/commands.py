@@ -34,6 +34,10 @@ class Command(namedtuple('Command', ['command', 'event', 'pending', 'live'])):
 async def command_retrigger(event, action, gh):
     """Handle retrigger command."""
 
+    # These events shouldn't be run on a closed issue.
+    if event['issue']['state'] != 'open':
+        return None
+
     await asyncio.sleep(1)
     payload = {'repository': event.data['repository']}
     issue = await gh.getitem(event.data['comment']['issue_url'])

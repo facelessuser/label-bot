@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.4
+
+- **FIX**: Avoid running retrigger commands on a closed issue.
+
 ## 1.1.3
 
 - **FIX**: Internal cleanup for easier maintenance.
