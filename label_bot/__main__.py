@@ -88,6 +88,9 @@ async def pull_sync_events(event, gh, request, *args, **kwargs):
     """
 
     event = util.Event(event.event, event.data)
+    if event.state != "open":
+        return
+
     await spawn(request, deferred_task(commands.run_all_pull_actions, event))
 
 
