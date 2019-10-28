@@ -61,9 +61,9 @@ async def deferred_commands(event):
             token = os.environ.get("GH_AUTH")
             bot = os.environ.get("GH_BOT")
             gh = gh_aiohttp.GitHubAPI(session, bot, oauth_token=token, cache=cache)
-            async for cmd in commands.run(event, gh):
+            async for cmd in commands.run(event, gh, bot):
                 if cmd.pending is not None:
-                    await cmd.pending(cmd.event, gh, bot)
+                    await cmd.pending(cmd.event, gh)
 
                 await get_scheduler_from_app(app).spawn(
                     deferred_task(cmd.command, cmd.event, cmd.event.sha, live=cmd.live)
