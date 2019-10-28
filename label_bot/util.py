@@ -1,6 +1,14 @@
 """Utilities."""
 import asyncio
+import base64
+import yaml
+import traceback
+import sys
 from gidgethub import sansio
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 LABEL_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
 REACTION_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
@@ -64,3 +72,23 @@ class Event:
                 await asyncio.sleep(1)
 
             yield label['name']
+
+    async def get_config(self, gh):
+        """Get label configuration file."""
+
+        await asyncio.sleep(1)
+        try:
+            result = await gh.getitem(
+                self.contents_url,
+                {
+                    'path': '.github/labels.yml',
+                    'ref': self.sha
+                }
+            )
+            content = base64.b64decode(result['content']).decode('utf-8')
+            config = yaml.load(content, Loader=Loader)
+        except Exception:
+            traceback.print_exc(file=sys.stdout)
+            config = {}
+
+        return config
