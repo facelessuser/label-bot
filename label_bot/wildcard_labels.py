@@ -70,7 +70,7 @@ async def wildcard_labels(event, gh, config):
         flags = get_flags(config)
         files = await get_changed_files(event, gh)
         add, remove = get_labels(rules, files, flags)
-        await update_issue_labels(event, gh, add, remove, config.get('quick_labels', True))
+        await update_issue_labels(event, gh, add, remove)
 
 
 async def get_changed_files(event, gh):
@@ -86,16 +86,13 @@ async def get_changed_files(event, gh):
     return files
 
 
-async def update_issue_labels(event, gh, add_labels, remove_labels, quick):
+async def update_issue_labels(event, gh, add_labels, remove_labels):
     """Update issue labels."""
 
     labels = []
     changed = False
 
-    if quick:
-        current_labels = event.labels[:]
-    else:
-        current_labels = [x async for x in event.live_labels(gh)]
+    current_labels = [x async for x in event.live_labels(gh)]
 
     for name in current_labels:
         low = name.lower()
