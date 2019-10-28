@@ -1,8 +1,8 @@
 """Review labels."""
 import os
-from gidgethub import sansio
 import traceback
 import sys
+from . import util
 
 
 async def review(event, gh, config):
@@ -36,7 +36,7 @@ async def review(event, gh, config):
         event.issue_labels_url,
         {'number': event.number},
         data={'labels': [review_label]},
-        accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        accept=util.LABEL_HEADER
     )
 
 

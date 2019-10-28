@@ -2,6 +2,10 @@
 import asyncio
 from gidgethub import sansio
 
+LABEL_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+REACTION_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
+HTML_HEADER = sansio.accept_format(media="html")
+
 
 class Event:
     """Event object."""

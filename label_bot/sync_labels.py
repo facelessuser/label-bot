@@ -1,11 +1,11 @@
 """Label syncing."""
 import asyncio
-from gidgethub import sansio
 from collections import namedtuple
 import os
 import re
 import traceback
 import sys
+from . import util
 
 RE_VALID_COLOR = re.compile('#[a-fA-F0-9]{6}')
 
@@ -124,14 +124,13 @@ async def sync(event, gh, config):
     labels, ignores = _parse_labels(config)
     delete = config.get('delete_labels', False)
     updated = set()
-    accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
 
     # No labels defined, assume this has not been configured
     if not labels:
         return
 
     count = 0
-    async for label in gh.getiter(event.labels_url, accept=accept):
+    async for label in gh.getiter(event.labels_url, accept=util.LABEL_HEADER):
 
         count += 1
         if (count % 20) == 0:
@@ -144,7 +143,7 @@ async def sync(event, gh, config):
                 event.labels_url,
                 {'name': edit.old},
                 data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
-                accept=accept
+                accept=util.LABEL_HEADER
             )
             updated.add(edit.old)
             updated.add(edit.new)
@@ -155,7 +154,7 @@ async def sync(event, gh, config):
                 await gh.delete(
                     event.labels_url,
                     {'name': label['name']},
-                    accept=accept
+                    accept=util.LABEL_HEADER
                 )
                 await asyncio.sleep(1)
             else:
@@ -172,7 +171,7 @@ async def sync(event, gh, config):
             await gh.post(
                 event.labels_url,
                 data={'name': name, 'color': color, 'description': description},
-                accept=accept
+                accept=util.LABEL_HEADER
             )
             await asyncio.sleep(1)
 

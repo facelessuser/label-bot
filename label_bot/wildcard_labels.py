@@ -1,9 +1,9 @@
 """Wildcard labels."""
 from wcmatch import glob
-from gidgethub import sansio
 import traceback
 import sys
 import os
+from . import util
 
 
 def get_flags(config):
@@ -117,7 +117,7 @@ async def update_issue_labels(event, gh, add_labels, remove_labels, quick):
             event.issue_labels_url,
             {'number': event.number},
             data={'labels': labels},
-            accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+            accept=util.LABEL_HEADER
         )
 
 

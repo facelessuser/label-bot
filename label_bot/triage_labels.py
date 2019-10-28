@@ -1,7 +1,7 @@
 """Triage labels."""
-from gidgethub import sansio
 import traceback
 import sys
+from . import util
 
 
 async def run(event, gh, config):
@@ -53,5 +53,5 @@ async def triage(event, gh, config):
         event.issue_labels_url,
         {'number': event.number},
         data={'labels': [triage_label]},
-        accept=','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        accept=util.LABEL_HEADER
     )
