@@ -91,7 +91,7 @@ def _parse_labels(config):
     labels = []
     seen = set()
     colors = _parse_colors(config)
-    for value in config.get('labels', {}):
+    for value in config.get('labels', []):
         try:
             name = value['name']
             _validate_str(name)
