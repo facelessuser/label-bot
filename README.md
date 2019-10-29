@@ -274,6 +274,13 @@ labels:
 
 ## Commands
 
+Commands can be initiated in either the issue/pull request body, or comments in an issue/pull request. It is recommended
+to have bot commands on their own line separated from other content with a new line, but they will be scraped no matter
+where they are found. They are scraped from the rendered markdown. Commands that apply to open issues will not execute
+if the issue is closed.
+
+### Retrigger
+
 You can force the bot to retrigger checks by commenting in issues. If a task failed for some reason you can rerun by
 mentioning the bot's name, and then asking it to retrigger:
 
@@ -290,6 +297,8 @@ If you want to rerun all checks, you can ask it to run `all`:
 Available checks that can be retriggered are: `wip`, `review`, `triage`, and `auto-label`. `triage` cannot be run in
 pull requests, and the other are not run outside of pull requests.
 
+### Sync
+
 If desired, you can also resync the labels on demand with the following command:
 
 ```
@@ -297,6 +306,74 @@ If desired, you can also resync the labels on demand with the following command:
 ```
 
 This will cause the repository's labels to be synced with the `.github/labels.yml` file on `master`.
+
+### LGTM
+
+LGTM (looks good to me) is a command that is meant for transitioning an issue into an accepting state. This often means
+removing labels and maybe even adding new labels. The idea is that by stating the issue "looks good", you are indicating
+that no additional information is needed to understand the bug or feature request, and in the case of pull requests,
+that no additional work is needed.
+
+For instance, we may have an issue tagged with `triage`. Once we've evaluated it, and determined that it is descriptive
+enough, we may want to accept it by removing the `triage` label.
+
+In the configuration file we simply specify when `lgtm` is run that we want to remove tags such as `triage`:
+
+```yml
+lgtm_remove:
+  - triage
+```
+
+Then we can simply run the following command in the issue's comments:
+
+```
+@gir-bot lgtm
+```
+
+Let's say we want to not only clear labels the `triage` label, but tag that it is a confirmed bug. We can simply create
+a alias in the label mapping called `lgtm_add`. The alias will have the name `bug` and will be associated with a list
+containing two labels:
+
+```yml
+lgtm_remove:
+  - triage
+
+lgtm_add:
+  bug: [bug, confirmed]
+```
+
+Then when we run the following command, `triage` will be removed, and `bug` and `confirmed` will be added:
+
+```yml
+@gir-bot lgtm bug
+```
+
+There are also two special aliases called `_issue` and `_pull_request`. These are used to always apply certain labels
+within the respective issue types issue or pull request.
+
+Let's say we always wanted to apply the `accepted` label to every issue that we've triaged and accepted as a valid
+issue.
+
+```yml
+lgtm_remove:
+  - triage
+
+lgtm_add:
+  _issue: [accepted]
+  bug: [bug, confirmed]
+```
+
+Now when we call `lgtm`, it will remove `triage` and add `accepted` without specify an additional alias:
+
+```
+@gir-bot lgtm
+```
+
+And when we do specify an alias, the specified alias labels will be added, but so will the labels in `_issue`:
+
+```
+@gir-bot lgtm, bug
+```
 
 [license-image-mit]: https://img.shields.io/badge/license-MIT-blue.svg
 [github-ci-image]: https://github.com/gir-bot/label-bot/workflows/build/badge.svg

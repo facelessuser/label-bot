@@ -40,23 +40,20 @@ wip:
 # LGTM
 
 lgtm_add:
-  bug: [bug, confirmed]
+  # Special entries for LGTM
+  _pull_request: [approved]
+  _issue: []
+
+  # Normal entries
+  docs: [docs]
+  confirmed-bug: [bug, confirmed]
   enhancement: [enhancement]
-  approved: [approved]
   maintenance: [maintenance]
   feature: [feature]
+  maybe: [maybe]
 
-lgtm_issue_remove:
-  # Maybe not all of these are applicable to issue
-  # but we'll include them anyways for now.
+lgtm_remove:
   - triage
-  - work-in-progress
-  - needs-review
-  - needs-decision
-  - needs-confirmation
-  - rejected
-
-lgtm_pull_request_remove:
   - work-in-progress
   - needs-review
   - needs-decision

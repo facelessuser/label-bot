@@ -5,11 +5,11 @@ import sys
 from . import util
 
 
-async def run(event, gh, config, key=None):
+async def run(event, gh, config, keys=None):
     """Run the task."""
 
     try:
-        await lgtm(event, gh, config, key)
+        await lgtm(event, gh, config, keys)
         success = True
     except Exception:
         traceback.print_exc(file=sys.stdout)
@@ -23,25 +23,27 @@ async def run(event, gh, config, key=None):
         )
 
 
-async def lgtm(event, gh, config, key):
+async def lgtm(event, gh, config, keys):
     """Remove specified labels, and set desired labels if specified."""
 
-    keys = config.get('lgtm_add', {})
+    add_keys = config.get('lgtm_add', {})
     add_labels = {}
     remove_labels = {}
     add = []
     remove = []
 
-    if key and key in keys:
-        for name in keys[key]:
-            add_labels[name.lower()] = name
+    if not keys:
+        keys = []
 
-    if event.event == 'pull_request':
-        for name in config.get('lgtm_pull_request_remove', []):
-            remove_labels[name.lower()] = name
-    else:
-        for name in config.get('lgtm_issue_remove', []):
-            remove_labels[name.lower()] = name
+    keys.append('_pull_request' if event.event == 'pull_request' else '_issue')
+
+    for key in keys:
+        if key in add_keys:
+            for name in add_keys[key]:
+                add_labels[name.lower()] = name
+
+    for name in config.get('lgtm_remove', []):
+        remove_labels[name.lower()] = name
 
     async for name in event.live_labels(gh):
         low = name.lower()
@@ -52,14 +54,6 @@ async def lgtm(event, gh, config, key):
 
     add = [x for x in add_labels.values()]
 
-    if add:
-        await gh.post(
-            event.issue_labels_url,
-            {'number': event.number},
-            data={'labels': add},
-            accept=util.LABEL_HEADER
-        )
-
     count = 0
     for label in remove:
         count += 1
@@ -69,5 +63,13 @@ async def lgtm(event, gh, config, key):
         await gh.delete(
             event.issue_labels_url,
             {'number': event.number, 'name': label},
+            accept=util.LABEL_HEADER
+        )
+
+    if add:
+        await gh.post(
+            event.issue_labels_url,
+            {'number': event.number},
+            data={'labels': add},
             accept=util.LABEL_HEADER
         )

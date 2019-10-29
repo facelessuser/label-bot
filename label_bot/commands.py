@@ -20,7 +20,7 @@ EVENT_MAP = {
 RE_COMMANDS = re.compile(
     r'''(?x)
     [ ]+(?:
-        (?P<lgtm>lgtm(?:[ ]*,[ ]*(?P<lgtm_key>[a-z][-a-z0-9_]*))?) |
+        (?P<lgtm>lgtm(?P<lgtm_key>[ ]*[a-z][-a-z0-9_]*(?:[ ]*,[ ]*[a-z][-a-z0-9_]*)*)?) |
         (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage|all)) |
         (?P<sync>sync[ ]+labels)
     )\b
@@ -84,7 +84,7 @@ async def command_lgtm(event, key, gh):
 
     kwargs = {}
     if key:
-        kwargs['key'] = key
+        kwargs['keys'] = [item.strip() for item in key.split(',')]
 
     await asyncio.sleep(1)
     payload = {'repository': event.data['repository']}
