@@ -1,4 +1,5 @@
 """Review labels."""
+import asyncio
 import os
 import traceback
 import sys
@@ -6,41 +7,54 @@ from . import util
 
 DEFAULT = 'needs-review'
 DEFAULT_SKIP = ['skip-review']
+DEFAULT_REMOVE = []
 
 
 async def review(event, gh, config):
     """Add review labels."""
 
     review_label = config.get('review_label', DEFAULT)
+    add_labels = {review_label: review_label.lower()}
+    remove_labels = {label.lower(): label for label in config.get('review_remove', DEFAULT_REMOVE)}
+    skip = set([label.lower() for label in config.get('review_skip', DEFAULT_SKIP)])
+
+    add = []
+    remove = []
 
     # Nothing to add
     if not review_label:
         return
 
-    skip = set([label.lower() for label in config.get('review_skip', DEFAULT_SKIP)])
-    skip.add(review_label.lower())
-
-    quick = config.get('quick_labels', True)
-    if quick:
-        current_labels = event.labels[:]
-    else:
-        current_labels = [x async for x in event.live_labels(gh)]
-
-    # If the label is already present, or the skip label is present, then there is nothing to do.
-    for name in current_labels:
-        if name.lower() in skip:
+    async for name in event.live_labels(gh):
+        low = name.lower()
+        if low in skip:
             return
+        if low in add_labels:
+            del add_labels[low]
+        if low in remove_labels:
+            remove.append(remove_labels[low])
 
-    current_labels.append(review_label)
-    event.labels.clear()
-    event.labels.extend(current_labels)
+    add = [x for x in add_labels.values()]
 
-    await gh.post(
-        event.issue_labels_url,
-        {'number': event.number},
-        data={'labels': [review_label]},
-        accept=util.LABEL_HEADER
-    )
+    count = 0
+    for label in remove:
+        count += 1
+        if (count % 2) == 0:
+            await asyncio.sleep(1)
+
+        await gh.delete(
+            event.issue_labels_url,
+            {'number': event.number, 'name': label},
+            accept=util.LABEL_HEADER
+        )
+
+    if add:
+        await gh.post(
+            event.issue_labels_url,
+            {'number': event.number},
+            data={'labels': add},
+            accept=util.LABEL_HEADER
+        )
 
 
 async def run(event, gh, config):

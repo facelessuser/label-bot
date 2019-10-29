@@ -5,11 +5,11 @@ import sys
 from . import util
 
 
-async def run(event, gh, config, keys=None):
+async def run(event, gh, config):
     """Run the task."""
 
     try:
-        await lgtm(event, gh, config, keys)
+        await lgtm(event, gh, config)
         success = True
     except Exception:
         traceback.print_exc(file=sys.stdout)
@@ -23,27 +23,15 @@ async def run(event, gh, config, keys=None):
         )
 
 
-async def lgtm(event, gh, config, keys):
+async def lgtm(event, gh, config):
     """Remove specified labels, and set desired labels if specified."""
 
-    add_keys = config.get('lgtm_add', {})
-    add_labels = {}
-    remove_labels = {}
+    key = 'pull_request' if event.event == 'pull_request' else 'issue'
+    add_labels = {value.lower(): value for value in config.get('lgtm_add', {}).get(key, [])}
+    remove_labels = {label.lower(): label for label in config.get('lgtm_remove', [])}
+
     add = []
     remove = []
-
-    if not keys:
-        keys = []
-
-    keys.append('_pull_request' if event.event == 'pull_request' else '_issue')
-
-    for key in keys:
-        if key in add_keys:
-            for name in add_keys[key]:
-                add_labels[name.lower()] = name
-
-    for name in config.get('lgtm_remove', []):
-        remove_labels[name.lower()] = name
 
     async for name in event.live_labels(gh):
         low = name.lower()

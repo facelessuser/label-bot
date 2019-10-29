@@ -37,15 +37,12 @@ async def deferred_commands(event):
                     await cmd.pending(cmd.event, gh)
 
                 await get_scheduler_from_app(app).spawn(
-                    deferred_task(cmd.command, cmd.event, live=cmd.live, kwargs=cmd.kwargs)
+                    deferred_task(cmd.command, cmd.event, live=cmd.live)
                 )
 
 
-async def deferred_task(function, event, live=False, kwargs=None):
+async def deferred_task(function, event, live=False):
     """Defer the event work."""
-
-    if kwargs is None:
-        kwargs = {}
 
     async with sem:
         async with aiohttp.ClientSession() as session:
@@ -59,10 +56,7 @@ async def deferred_task(function, event, live=False, kwargs=None):
             if live:
                 config['quick_labels'] = False
 
-            if kwargs:
-                await function(event, gh, config, **kwargs)
-            else:
-                await function(event, gh, config)
+            await function(event, gh, config)
 
 
 @router.register("pull_request", action="labeled")

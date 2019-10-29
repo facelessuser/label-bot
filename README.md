@@ -14,12 +14,16 @@ Label bot handles a handful of label related scenarios:
 - Label Bot can manage labels by syncing them up with a list specified in a configuration file. If the configuration
   file changes, labels will be added, edited, or removed (if enabled) to match the configuration.
 - Label Bot can mark new issues with a specific labels. For instance, out of the box, it marks new issues with `triage`.
+  It can also remove labels if desired.
 - Label Bot can mark new pull requests and pull requests with specific labels. For instance, out of the box, it marks
   new pull requests with `needs-review`. Additionally, any new pushes to a pull request, are marked `needs-review`.
+  It can also remove labels if desired as well.
 - Label Bot will mark pull requests as pending if certain labels are present. By default it looks for things like:
   `work-in-progress`, `wip`, etc.
 - Label Bot can mark a pull requests with additional tags based on glob patterns. If a file matches a glob pattern, it
   is assigned the associated label(s).
+- Label Bot also exposes commands to retrigger tasks, sync labels, or put tag an accepted/approved issue with specific
+  labels.
 
 ## Can I Use It?
 
@@ -62,6 +66,13 @@ the following option:
 triage_skip: [skip-triage]
 ```
 
+If you'd like to remove labels on triage as well, you can use the `triage_remove` option. This is good if you need to
+but it back in the triage state via a retrigger and reset some labels.
+
+```yml
+triage_remove: [confirmed]
+```
+
 ## Review Labels
 
 Label Bot will mark new pull requests with `needs-review`. It will also re-add the label if it was removed, and more
@@ -79,6 +90,13 @@ you prefer to rename it, or add additional labels, simply specify a different na
 
 ```yml
 review_skip: [skip-review]
+```
+
+If you'd like to also remove labels, such as `approved` labels, you can configure the `review_remove` option and list
+various labels to remove.
+
+```
+review_remove: [approved]
 ```
 
 ## WIP Labels
@@ -309,12 +327,12 @@ This will cause the repository's labels to be synced with the `.github/labels.ym
 
 ### LGTM
 
-LGTM (looks good to me) is a command that is meant for transitioning an issue into an accepting state. This often means
+LGTM (looks good to me) is a command that is meant for transitioning an issue into an accepted state. This often means
 removing labels and maybe even adding new labels. The idea is that by stating the issue "looks good", you are indicating
 that no additional information is needed to understand the bug or feature request, and in the case of pull requests,
 that no additional work is needed.
 
-For instance, we may have an issue tagged with `triage`. Once we've evaluated it, and determined that it is descriptive
+For instance, we may have an issue tagged with `triage`. Once we've evaluated it and determined that it is descriptive
 enough, we may want to accept it by removing the `triage` label.
 
 In the configuration file we simply specify when `lgtm` is run that we want to remove tags such as `triage`:
@@ -330,50 +348,20 @@ Then we can simply run the following command in the issue's comments:
 @gir-bot lgtm
 ```
 
-Let's say we want to not only clear labels the `triage` label, but tag that it is a confirmed bug. We can simply create
-a alias in the label mapping called `lgtm_add`. The alias will have the name `bug` and will be associated with a list
-containing two labels:
+Let's say we have a pull request, and we want to clear `needs-review` label, but also tag it with the label `approved`.
+We can simply create the `lgtm_remove` (which is shared for both pull requests and issues), and then use the `lgtm_add`
+option to specify the desired labels to add under the key `pull_request` (f specifying for a normal issue, we'd use
+`issue`).
 
 ```yml
 lgtm_remove:
-  - triage
+  - needs-review
 
 lgtm_add:
-  bug: [bug, confirmed]
+  pull_request: [approved]
 ```
 
-Then when we run the following command, `triage` will be removed, and `bug` and `confirmed` will be added:
-
-```yml
-@gir-bot lgtm bug
-```
-
-There are also two special aliases called `_issue` and `_pull_request`. These are used to always apply certain labels
-within the respective issue types issue or pull request.
-
-Let's say we always wanted to apply the `accepted` label to every issue that we've triaged and accepted as a valid
-issue.
-
-```yml
-lgtm_remove:
-  - triage
-
-lgtm_add:
-  _issue: [accepted]
-  bug: [bug, confirmed]
-```
-
-Now when we call `lgtm`, it will remove `triage` and add `accepted` without specify an additional alias:
-
-```
-@gir-bot lgtm
-```
-
-And when we do specify an alias, the specified alias labels will be added, but so will the labels in `_issue`:
-
-```
-@gir-bot lgtm, bug
-```
+Then when we run `@gir-bot lgtm`, `needs-review` will be removed, and `approved` will be added.
 
 [license-image-mit]: https://img.shields.io/badge/license-MIT-blue.svg
 [github-ci-image]: https://github.com/gir-bot/label-bot/workflows/build/badge.svg
