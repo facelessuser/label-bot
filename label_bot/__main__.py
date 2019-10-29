@@ -14,7 +14,7 @@ from . import sync_labels
 from . import triage_labels
 from . import commands
 from . import util
-__version__ = '1.1.4'
+__version__ = '1.2.0'
 
 router = routing.Router()
 routes = web.RouteTableDef()
@@ -37,12 +37,15 @@ async def deferred_commands(event):
                     await cmd.pending(cmd.event, gh)
 
                 await get_scheduler_from_app(app).spawn(
-                    deferred_task(cmd.command, cmd.event, live=cmd.live)
+                    deferred_task(cmd.command, cmd.event, live=cmd.live, kwargs=cmd.kwargs)
                 )
 
 
-async def deferred_task(function, event, live=False):
+async def deferred_task(function, event, live=False, kwargs=None):
     """Defer the event work."""
+
+    if kwargs is None:
+        kwargs = {}
 
     async with sem:
         async with aiohttp.ClientSession() as session:
@@ -56,7 +59,10 @@ async def deferred_task(function, event, live=False):
             if live:
                 config['quick_labels'] = False
 
-            await function(event, gh, config)
+            if kwargs:
+                await function(event, gh, config, **kwargs)
+            else:
+                await function(event, gh, config)
 
 
 @router.register("pull_request", action="labeled")
