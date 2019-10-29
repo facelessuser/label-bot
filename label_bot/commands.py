@@ -83,15 +83,20 @@ async def command_lgtm(event, gh):
         return None
 
     await asyncio.sleep(1)
-    payload = {'repository': event.data['repository']}
-    issue = await gh.getitem(event.data['comment']['issue_url'])
-    event_type = 'issues'
-    key = 'issue'
-    if 'pull_request' in issue:
-        event_type = 'pull_request'
-        key = 'pull_request'
-        issue = await gh.getitem(issue['pull_request']['url'])
-    payload[key] = issue
+    if 'comment' in event.data:
+        payload = {'repository': event.data['repository']}
+        issue = await gh.getitem(event.data['comment']['issue_url'])
+        event_type = 'issues'
+        key = 'issue'
+        if 'pull_request' in issue:
+            event_type = 'pull_request'
+            key = 'pull_request'
+            issue = await gh.getitem(issue['pull_request']['url'])
+        payload[key] = issue
+    else:
+        event_type = event.event
+        payload = event.data
+
     return Command(lgtm_labels.run, util.Event(event_type, payload), None, False)
 
 
