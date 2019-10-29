@@ -116,11 +116,9 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
             await asyncio.sleep(1)
 
         await gh.delete(
-            await gh.delete(
-                event.issue_labels_url,
-                {'number': event.number, 'name': label},
-                accept=util.LABEL_HEADER
-            )
+            event.issue_labels_url,
+            {'number': event.number, 'name': label},
+            accept=util.LABEL_HEADER
         )
 
 

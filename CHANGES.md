@@ -1,8 +1,10 @@
 # Changelog
 
-## 1.1.4
+## 1.2.0
 
+- **NEW**: Add `@bot lgtm` command to remove blocking labels and optionally add others.
 - **FIX**: Avoid running retrigger commands on a closed issue.
+- **FIX**: Fix issue with deleting labels in wildcard labels.
 
 ## 1.1.3
 

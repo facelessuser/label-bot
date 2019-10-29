@@ -3,6 +3,9 @@ import traceback
 import sys
 from . import util
 
+DEFAULT = 'triage'
+DEFAULT_SKIP = ['skip-triage']
+
 
 async def run(event, gh, config):
     """Run task."""
@@ -25,13 +28,13 @@ async def run(event, gh, config):
 async def triage(event, gh, config):
     """Add triage labels."""
 
-    triage_label = config.get('triage_label', 'triage')
+    triage_label = config.get('triage_label', DEFAULT)
 
     # Nothing to add
     if not triage_label:
         return
 
-    skip = set([label.lower() for label in config.get('triage_skip', ['skip-triage'])])
+    skip = set([label.lower() for label in config.get('triage_skip', DEFAULT_SKIP)])
     skip.add(triage_label.lower())
 
     quick = config.get('quick_labels', True)

@@ -4,17 +4,20 @@ import traceback
 import sys
 from . import util
 
+DEFAULT = 'needs-review'
+DEFAULT_SKIP = ['skip-review']
+
 
 async def review(event, gh, config):
     """Add review labels."""
 
-    review_label = config.get('review_label', 'needs-review')
+    review_label = config.get('review_label', DEFAULT)
 
     # Nothing to add
     if not review_label:
         return
 
-    skip = set([label.lower() for label in config.get('review_skip', ['skip-review'])])
+    skip = set([label.lower() for label in config.get('review_skip', DEFAULT_SKIP)])
     skip.add(review_label.lower())
 
     quick = config.get('quick_labels', True)
