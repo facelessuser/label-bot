@@ -4,6 +4,7 @@
 
 - **NEW**: Add `@bot lgtm` command to remove blocking labels and optionally add others.
 - **NEW**: Allow `triage` and `review` task to remove labels as well.
+- **NEW**: Add `@bot add` and `@bot remove` command to bulk add or remove labels.
 - **FIX**: Avoid running retrigger commands on a closed issue.
 - **FIX**: Fix issue with deleting labels in wildcard labels.
 

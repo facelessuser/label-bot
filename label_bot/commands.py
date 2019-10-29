@@ -8,6 +8,7 @@ from . import sync_labels
 from . import triage_labels
 from . import review_labels
 from . import lgtm_labels
+from . import add_remove_labels
 from . import util
 from collections import namedtuple
 
@@ -21,6 +22,8 @@ RE_COMMANDS = re.compile(
     r'''(?x)
     [ ]+(?:
         (?P<lgtm>lgtm) |
+        (?P<add>add(?P<add_key>[ ]*[^\s,][^\r\n\t\v,]*(?:[ ]*,[ ]*[^\s,][^\r\n\t\v,]*)*)) |
+        (?P<remove>remove(?P<remove_key>[ ]*[^\s,][^\r\n\t\v,]*(?:[ ]*,[ ]*[^\s,][^\r\n\t\v,]*)*)) |
         (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage|all)) |
         (?P<sync>sync[ ]+labels)
     )\b
@@ -29,7 +32,7 @@ RE_COMMANDS = re.compile(
 )
 
 
-class Command(namedtuple('Command', ['command', 'event', 'pending', 'live'])):
+class Command(namedtuple('Command', ['command', 'event', 'pending', 'live', 'kwargs'])):
     """Command."""
 
 
@@ -52,15 +55,15 @@ async def command_retrigger(event, action, gh):
     payload[key] = issue
 
     if action in ('triage', 'all') and key == 'issue':
-        command = Command(triage_labels.run, util.Event(event_type, payload), None, False)
+        command = Command(triage_labels.run, util.Event(event_type, payload), None, False, {})
     elif action == 'all' and key == 'pull_request':
-        command = Command(run_all_pull_actions, util.Event(event_type, payload), None, False)
+        command = Command(run_all_pull_actions, util.Event(event_type, payload), None, False, {})
     elif action == 'review' and key == 'pull_request':
-        command = Command(review_labels.run, util.Event(event_type, payload), None, False)
+        command = Command(review_labels.run, util.Event(event_type, payload), None, False, {})
     elif action == 'wip' and key == 'pull_request':
-        command = Command(wip_labels.run, util.Event(event_type, payload), None, True)
+        command = Command(wip_labels.run, util.Event(event_type, payload), None, True, {})
     elif action == 'auto-labels' and key == 'pull_request':
-        command = Command(wildcard_labels.run, util.Event(event_type, payload), wildcard_labels.pending, True)
+        command = Command(wildcard_labels.run, util.Event(event_type, payload), wildcard_labels.pending, True, {})
     else:
         command = None
     return command
@@ -73,7 +76,7 @@ async def command_sync(event, gh):
     event_type = 'push'
     branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
     payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
-    return Command(sync_labels.run, util.Event(event_type, payload), sync_labels.pending, False)
+    return Command(sync_labels.run, util.Event(event_type, payload), sync_labels.pending, False, {})
 
 
 async def command_lgtm(event, gh):
@@ -97,7 +100,42 @@ async def command_lgtm(event, gh):
         event_type = event.event
         payload = event.data
 
-    return Command(lgtm_labels.run, util.Event(event_type, payload), None, False)
+    return Command(lgtm_labels.run, util.Event(event_type, payload), None, False, {})
+
+
+async def command_add_remove(event, gh, labels, remove=False):
+    """Handle "looks good to me" command."""
+
+    if event.data['issue']['state'] != 'open':
+        return None
+
+    valid_labels = []
+    for item in labels.split(','):
+        item = item.strip()
+        if item and item not in ('.', '..'):
+            valid_labels.append(item)
+
+    kwargs = {
+        'labels': valid_labels,
+        'remove': remove
+    }
+
+    await asyncio.sleep(1)
+    if 'comment' in event.data:
+        payload = {'repository': event.data['repository']}
+        issue = await gh.getitem(event.data['comment']['issue_url'])
+        event_type = 'issues'
+        key = 'issue'
+        if 'pull_request' in issue:
+            event_type = 'pull_request'
+            key = 'pull_request'
+            issue = await gh.getitem(issue['pull_request']['url'])
+        payload[key] = issue
+    else:
+        event_type = event.event
+        payload = event.data
+
+    return Command(add_remove_labels.run, util.Event(event_type, payload), None, False, kwargs)
 
 
 async def run_all_pull_actions(event, gh, config):
@@ -155,6 +193,12 @@ async def run(event, gh, bot):
 
         elif m.group('lgtm'):
             cmd = await command_lgtm(event, gh)
+
+        elif m.group('add'):
+            cmd = await command_add_remove(event, gh, m.group('add_key'))
+
+        elif m.group('remove'):
+            cmd = await command_add_remove(event, gh, m.group('remove_key'), remove=True)
 
         else:
             continue

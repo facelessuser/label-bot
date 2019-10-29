@@ -37,11 +37,11 @@ async def deferred_commands(event):
                     await cmd.pending(cmd.event, gh)
 
                 await get_scheduler_from_app(app).spawn(
-                    deferred_task(cmd.command, cmd.event, live=cmd.live)
+                    deferred_task(cmd.command, cmd.event, live=cmd.live, kwargs=cmd.kwargs)
                 )
 
 
-async def deferred_task(function, event, live=False):
+async def deferred_task(function, event, live=False, kwargs=None):
     """Defer the event work."""
 
     async with sem:
@@ -56,7 +56,10 @@ async def deferred_task(function, event, live=False):
             if live:
                 config['quick_labels'] = False
 
-            await function(event, gh, config)
+            if kwargs:
+                await function(event, gh, config, **kwargs)
+            else:
+                await function(event, gh, config)
 
 
 @router.register("pull_request", action="labeled")
