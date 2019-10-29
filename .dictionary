@@ -1,5 +1,6 @@
 Heroku
 JSON
+LGTM
 WIP
 Wildcard
 YAML
@@ -13,6 +14,6 @@ repos
 resync
 retrigger
 retriggered
-retriggered
+triaged
 webhook
 wildcard

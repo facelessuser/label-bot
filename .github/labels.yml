@@ -27,6 +27,21 @@ rules:
   - labels: [sync-labels]
     patterns: ['label_bot/sync_labels.py']
 
+  - labels: [lgtm-labels]
+    patterns: ['label_bot/lgtm_labels.py']
+
+# Triage
+
+triage_add: 'triage'
+triage_skip: ['skip-triage']
+triage_remove: ['confirmed']
+
+# Review
+
+review_add: 'needs-review'
+review_skip: ['skip-review']
+review_remove: ['approved']
+
 # WIP
 
 wip:
@@ -36,50 +51,45 @@ wip:
   - needs-confirmation
   - requires-changes
   - rejected
+  - duplicate
+  - invalid
+  - triage
+  - wontfix
 
 # LGTM
 
 lgtm_add:
-  bug: [bug, confirmed]
-  enhancement: [enhancement]
-  approved: [approved]
-  maintenance: [maintenance]
-  feature: [feature]
+  pull_request: [approved]
+  issue: []
 
-lgtm_issue_remove:
-  # Maybe not all of these are applicable to issue
-  # but we'll include them anyways for now.
-  - triage
-  - work-in-progress
-  - needs-review
-  - needs-decision
-  - needs-confirmation
-  - rejected
-
-lgtm_pull_request_remove:
+lgtm_remove:
   - work-in-progress
   - needs-review
   - needs-decision
   - needs-confirmation
   - requires-changes
   - rejected
+  - duplicate
+  - invalid
+  - triage
+  - wontfix
 
 # Label management
 
 delete_labels: true
 
 colors:
-    bug: '#c45b46'
-    feature: '#7b17d8'
-    support: '#efbe62'
-    maintenance: '#b2ffeb'
-    category: '#709ad8'
-    subcategory: '#bfd4f2'
-    pending: '#f0f49a'
-    rejected: '#f7c7be'
-    approved: '#beed6d'
-    low: '#dddddd'
-    bot: '#000000'
+  bug: '#c45b46'
+  feature: '#7b17d8'
+  support: '#efbe62'
+  maintenance: '#b2ffeb'
+  category: '#709ad8'
+  subcategory: '#bfd4f2'
+  pending: '#f0f49a'
+  rejected: '#f7c7be'
+  approved: '#beed6d'
+  low: '#dddddd'
+  bot: '#000000'
 
 labels:
 - name: bug
@@ -115,9 +125,12 @@ labels:
   description: Related to documentation.
 
 - name: sync-labels
-  renamed: label-mgr
   color: subcategory
   description: Sync labels library.
+
+- name: lgtm-labels
+  color: subcategory
+  description: LGTM labels library.
 
 - name: wip-labels
   color: subcategory
