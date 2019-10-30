@@ -47,6 +47,16 @@ available bot on the marketplace.
 4. If you are using a separate bot account to communicate with your repos, you may have to add the bot as a
    collaborator.
 
+## Which Configuration Gets Used?
+
+For issues, the configuration on master gets used as there is no configuration associated with an issue.
+
+For pull requests, the configuration file in the pull gets used except when issuing a [sync](#sync) command. When
+issuing the `@bot sync labels` command from a comment in a pull request, the configuration in master will only be used.
+This is to prevent a user creating a fork and then issuing the command and messing up all of your global labels on the
+repository. All other tasks and commands in the pull request will use the configuration file local to the pull request
+in order to allow testing of changes to the configuration files as they will only affect the current pull request.
+
 ## Triage Labels
 
 Label Bot will mark new issue with `triage`.
