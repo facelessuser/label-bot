@@ -4,26 +4,27 @@
 
 ## Overview
 
-This is a GitHub app for managing labels in a repository. It is written by and used in projects for
+This is a GitHub app for performing label related actions in a repository. It is written by and used in projects for
 [@facelessuser](https://github.com/facelessuser). It uses the the persona of [@gir-bot](https://github.com/gir-bot), but
-can technically use any user. Label Bot is not a publicly available service, but can be modified and installed in for
+can technically use any user. Label Bot is not a publicly available service, but can be modified and installed for
 personal use in Heroku or some other hosting service.
 
 Label bot handles a handful of label related scenarios:
 
 - Label Bot can manage labels by syncing them up with a list specified in a configuration file. If the configuration
-  file changes, labels will be added, edited, or removed (if enabled) to match the configuration.
+  file changes, labels will be added, edited, or removed (if enabled) from your repository to match the configuration.
+  This modifies the global issue list for your repository.
 - Label Bot can mark new issues with a specific labels. For instance, out of the box, it marks new issues with `triage`.
   It can also remove labels if desired.
-- Label Bot can mark new pull requests and pull requests with specific labels. For instance, out of the box, it marks
-  new pull requests with `needs-review`. Additionally, any new pushes to a pull request, are marked `needs-review`.
-  It can also remove labels if desired as well.
+- Label Bot can mark new pull requests and pushes to a pull requests with specific labels. For instance, out of the box,
+  it will mark new pull requests and new pushes to the pull request with `needs-review`. It can also remove remove
+  labels if desired. This can come in handy if you've (for example) added an `approved` label and more changes were
+  pushed, it could remove the `approved` label, and then add `needs-review`.
 - Label Bot will mark pull requests as pending if certain labels are present. By default it looks for things like:
   `work-in-progress`, `wip`, etc.
-- Label Bot can mark a pull requests with additional tags based on glob patterns. If a file matches a glob pattern, it
+- Label Bot can tag a pull requests with additional labels based on glob patterns. If a file matches a glob pattern, it
   is assigned the associated label(s).
-- Label Bot also exposes commands to retrigger tasks, sync labels, or put tag an accepted/approved issue with specific
-  labels.
+- Label Bot also exposes commands to retrigger tasks, sync labels, and other specialty label related commands.
 
 ## Can I Use It?
 
@@ -36,8 +37,8 @@ available bot on the marketplace.
    Normally `repo` privileges are sufficient. Learn how to setup an [access token][access] by checking out the
    documentation.
 3. Setup a webhook in your repository. Point the URL to your running app. Ensure it sends data via JSON. Use a
-   token with high entropy and make sure it is used by your webhook and assigned to `GH_SECRET` in your app
-   environment. Lastly, make sure the webhook sends requests for:
+   token with high entropy and make sure it is used by your webhook, but also assigned to `GH_SECRET` in your app's
+   environmental variables. Lastly, make sure the webhook sends requests for:
 
     - `issues`: allows triage labels task to be sent events.
     - `push`: , allows the repository label sync task to be sent events.
@@ -49,13 +50,15 @@ available bot on the marketplace.
 
 ## Which Configuration Gets Used?
 
+Sync commands, which occur on push and via `@bot sync labels` are always run using the configuration file on `master`.
+
 For issues, the configuration on master gets used as there is no configuration associated with an issue.
 
 For pull requests, the configuration file in the pull gets used except when issuing a [sync](#sync) command. When
 issuing the `@bot sync labels` command from a comment in a pull request, the configuration in master will only be used.
-This is to prevent a user creating a fork and then issuing the command and messing up all of your global labels on the
-repository. All other tasks and commands in the pull request will use the configuration file local to the pull request
-in order to allow testing of changes to the configuration files as they will only affect the current pull request.
+
+All commands issued in the body of a pull request, issue, or comment in an issue or pull request are restricted to
+owners and collaborators.
 
 ## Triage Labels
 
@@ -360,7 +363,7 @@ Then we can simply run the following command in the issue's comments:
 
 Let's say we have a pull request, and we want to clear `needs-review` label, but also tag it with the label `approved`.
 We can simply create the `lgtm_remove` (which is shared for both pull requests and issues), and then use the `lgtm_add`
-option to specify the desired labels to add under the key `pull_request` (f specifying for a normal issue, we'd use
+option to specify the desired labels to add under the key `pull_request` (if specifying for a normal issue, we'd use
 `issue`).
 
 ```yml

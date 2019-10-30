@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- **FIX**: Only collaborators and owners are allowed to issue commands.
+
 ## 1.2.0
 
 - **NEW**: Add `@bot lgtm` command to remove blocking labels and optionally add others.

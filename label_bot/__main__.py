@@ -137,6 +137,11 @@ async def issue_comment_created(event, gh, request, *args, **kwargs):
     for the issue type.
     """
 
+    # Only allow collaborators or owners to issue commands
+    etype = commands.EVENT_MAP[event.event]
+    if not event.data[etype]['author_association'] in ('COLLABORATOR', 'OWNER'):
+        return
+
     await spawn(request, deferred_commands(event))
 
 
