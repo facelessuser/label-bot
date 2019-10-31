@@ -132,7 +132,10 @@ class Event:
                 master_config = yaml.load(content, Loader=Loader)
             except Exception:
                 traceback.print_exc(file=sys.stdout)
+                # Return an empty config which will cause label sync not to run
+                return master_config
 
+        config = {}
         try:
             result = await gh.getitem(
                 self.contents_url,
@@ -145,6 +148,6 @@ class Event:
             config = yaml.load(content, Loader=Loader)
         except Exception:
             traceback.print_exc(file=sys.stdout)
-            config = {}
+            return config
 
         return self.merge_config(master_config, config)

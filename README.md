@@ -77,6 +77,12 @@ When merging the master configuration and the local repo configuration, merging 
   In the future, `lgtm_add` may get broken up into two separate options for consistency. This would not occur until
   version 2.0.
 
+Even with a master configuration file, you still must specify a `.github/labels.yml` file in your repository, even if
+all it contains is an empty hash `{}`. If you specify a master configuration, if either the master or local
+configuration file fails, an empty set of options will be returned. Since repository label syncing will not occur if
+when the `labels` option is missing, this will prevent all your repository labels from getting wiped out in the case
+of a failure.
+
 ## Triage Labels
 
 Label Bot will mark new issue with `triage`.
