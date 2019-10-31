@@ -165,8 +165,8 @@ async def sync(event, gh, config):
                 print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
             updated.add(label['name'])
 
-        if (calls % 10) == 0:
-            await asyncio.sleep(10)
+        if (calls % 20) == 0:
+            await asyncio.sleep(30)
 
     for value in labels:
         name = value['name']
@@ -181,10 +181,10 @@ async def sync(event, gh, config):
                 accept=util.LABEL_HEADER
             )
             await asyncio.sleep(1)
-            call += 1
+            calls += 1
 
-            if (calls % 10) == 0:
-                await asyncio.sleep(10)
+            if (calls % 20) == 0:
+                await asyncio.sleep(30)
 
 
 async def pending(event, gh):
