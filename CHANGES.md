@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.2.1
+## 1.3.0
 
+- **NEW**: Optionally allow specifying a master configuration file template from another repository.
 - **FIX**: Only collaborators and owners are allowed to issue commands.
 - **FIX**: Fix commands not working in pull request issue body.
 - **FIX**: Throttle sync command more in cases where the API is being hit quite hard.
