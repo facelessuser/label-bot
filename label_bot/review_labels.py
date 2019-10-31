@@ -57,7 +57,7 @@ async def review(event, gh, config):
         )
 
 
-async def run(event, gh, config):
+async def run(event, gh, config, **kwargs):
     """Run the task."""
 
     try:

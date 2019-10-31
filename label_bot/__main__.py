@@ -37,12 +37,15 @@ async def deferred_commands(event):
                     await cmd.pending(cmd.event, gh)
 
                 await get_scheduler_from_app(app).spawn(
-                    deferred_task(cmd.command, cmd.event, live=cmd.live, kwargs=cmd.kwargs)
+                    deferred_task(cmd.command, cmd.event, kwargs=cmd.kwargs)
                 )
 
 
-async def deferred_task(function, event, live=False, kwargs=None):
+async def deferred_task(function, event, kwargs=None):
     """Defer the event work."""
+
+    if kwargs is None:
+        kwargs = {}
 
     async with sem:
         async with aiohttp.ClientSession() as session:
@@ -53,13 +56,7 @@ async def deferred_task(function, event, live=False, kwargs=None):
             # If we need to make sure the task is working with live issue labels, turn off quick labels.
             await asyncio.sleep(1)
             config = await event.get_config(gh)
-            if live:
-                config['quick_labels'] = False
-
-            if kwargs:
-                await function(event, gh, config, **kwargs)
-            else:
-                await function(event, gh, config)
+            await function(event, gh, config, **kwargs)
 
 
 @router.register("pull_request", action="labeled")
@@ -75,9 +72,7 @@ async def pull_label_events(event, gh, request, *args, **kwargs):
     if event.state != "open":
         return
 
-    await asyncio.sleep(1)
-    config = await event.get_config(gh)
-    await wip_labels.run(event, gh, config)
+    await spawn(request, deferred_task(wip_labels.run, event))
 
 
 @router.register("pull_request", action="synchronize")
@@ -106,9 +101,7 @@ async def issues_open_events(event, gh, request, *args, **kwargs):
     """
 
     event = util.Event(event.event, event.data)
-    await asyncio.sleep(1)
-    config = await event.get_config(gh)
-    await triage_labels.run(event, gh, config)
+    await spawn(request, deferred_task(triage_labels.run, event))
 
 
 @router.register('push', ref='refs/heads/master')

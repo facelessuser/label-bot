@@ -9,24 +9,14 @@ DEFAULT = ('wip', 'work in progress', 'work-in-progress')
 async def wip(event, gh, config):
     """Handle label events."""
 
-    if event.state != 'open':
-        return
-
     wip = False
     wip_list = set([label.lower() for label in config.get('wip', DEFAULT)])
 
-    if config.get('labels_quick', True):
-        # Grab the labels in this issue event.
-        for name in event.labels:
-            if name.lower() in wip_list:
-                wip = True
-                break
-    else:
-        # Grab the labels in this issue event.
-        async for name in event.live_labels(gh):
-            if name.lower() in wip_list:
-                wip = True
-                break
+    # Grab the labels in this issue event.
+    async for name in event.live_labels(gh):
+        if name.lower() in wip_list:
+            wip = True
+            break
 
     await gh.post(
         event.statuses_url,
@@ -40,7 +30,7 @@ async def wip(event, gh, config):
     )
 
 
-async def run(event, gh, config):
+async def run(event, gh, config, **kwargs):
     """Run task."""
 
     try:
