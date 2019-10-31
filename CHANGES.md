@@ -3,6 +3,7 @@
 ## 1.2.1
 
 - **FIX**: Only collaborators and owners are allowed to issue commands.
+- **FIX**: Fix commands not working in pull request issue body.
 
 ## 1.2.0
 
