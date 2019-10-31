@@ -130,11 +130,13 @@ async def sync(event, gh, config):
         return
 
     count = 0
+    calls = 1
     async for label in gh.getiter(event.labels_url, accept=util.LABEL_HEADER):
 
         count += 1
         if (count % 20) == 0:
             await asyncio.sleep(1)
+            calls += 1
 
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
@@ -147,6 +149,7 @@ async def sync(event, gh, config):
             )
             updated.add(edit.old)
             updated.add(edit.new)
+            calls += 1
             await asyncio.sleep(1)
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
@@ -156,10 +159,14 @@ async def sync(event, gh, config):
                     {'name': label['name']},
                     accept=util.LABEL_HEADER
                 )
+                calls += 1
                 await asyncio.sleep(1)
             else:
                 print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
             updated.add(label['name'])
+
+        if (calls % 20) == 0:
+            await asyncio.sleep(30)
 
     for value in labels:
         name = value['name']
@@ -174,6 +181,10 @@ async def sync(event, gh, config):
                 accept=util.LABEL_HEADER
             )
             await asyncio.sleep(1)
+            calls += 1
+
+            if (calls % 20) == 0:
+                await asyncio.sleep(30)
 
 
 async def pending(event, gh):

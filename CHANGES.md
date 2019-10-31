@@ -4,6 +4,7 @@
 
 - **FIX**: Only collaborators and owners are allowed to issue commands.
 - **FIX**: Fix commands not working in pull request issue body.
+- **FIX**: Throttle sync command more in cases where the API is being hit quite hard.
 
 ## 1.2.0
 
