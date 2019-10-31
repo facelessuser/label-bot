@@ -4,6 +4,7 @@ import base64
 import yaml
 import traceback
 import sys
+import os
 from gidgethub import sansio
 try:
     from yaml import CLoader as Loader
@@ -13,6 +14,18 @@ except ImportError:
 LABEL_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
 REACTION_HEADER = ','.join([sansio.accept_format(), 'application/vnd.github.squirrel-girl-preview+json'])
 HTML_HEADER = sansio.accept_format(media="html")
+
+SINGLE_VALUES = {
+    'brace_expansion', 'extended_glob', 'case_insensitive',
+    'triage_label', 'review_label', 'delete_labels'
+}
+
+LIST_VALUES = {
+    'labels', 'rules', 'wip', 'lgtm_remove', 'triage_skip',
+    'triage_remove', 'review_skip', 'review_remove'
+}
+
+DICT_VALUES = {'colors'}
 
 
 class Event:
@@ -73,10 +86,53 @@ class Event:
 
             yield label['name']
 
+    def merge_config(self, master_config, config):
+        """Merge master config and local config."""
+
+        if not master_config:
+            return config
+
+        for key, value in config.items():
+            if key in SINGLE_VALUES:
+                master_config[key] = value
+            elif key in LIST_VALUES and key in master_config:
+                master_config[key].extend(value)
+            elif key in DICT_VALUES and key in master_config:
+                for k, v in value.items():
+                    master_config[key][k] = v
+            elif key == 'lgtm_add':
+                for k, v in value.items():
+                    if k in master_config[key]:
+                        master_config[key][k].extend(v)
+                    else:
+                        master_config[key][k] = v
+            else:
+                master_config[key] = value
+        return master_config
+
     async def get_config(self, gh):
         """Get label configuration file."""
 
         await asyncio.sleep(1)
+        master_config = {}
+        master = os.environ.get("GH_CONFIG", '')
+        if master:
+            try:
+                user, repo, path, ref = master.split(':')
+                result = await gh.getitem(
+                    'https://api.github.com/repos/{user}/{repo}/contents/{path}/{?ref}',
+                    {
+                        'user': user,
+                        'repo': repo,
+                        'path': path,
+                        'ref': ref
+                    }
+                )
+                content = base64.b64decode(result['content']).decode('utf-8')
+                master_config = yaml.load(content, Loader=Loader)
+            except Exception:
+                traceback.print_exc(file=sys.stdout)
+
         try:
             result = await gh.getitem(
                 self.contents_url,
@@ -91,4 +147,4 @@ class Event:
             traceback.print_exc(file=sys.stdout)
             config = {}
 
-        return config
+        return self.merge_config(master_config, config)
