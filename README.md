@@ -60,6 +60,23 @@ For pull requests, the configuration file in the pull gets used except when issu
 All commands issued in the body of a pull request, issue, or comment in an issue or pull request are restricted to
 owners and collaborators.
 
+## Using a Master Configuration Template
+
+You can use a master configuration file and share it across repositories. This is a good way to define common labels
+that you wish to reuse. Point to the master configuration file by setting the environmental variable `GH_CONFIG` on your
+server. It should be in the form `user:repo:path/to/config:ref`. In our case it is
+`facelessuser:master-labels:labels.yml:master`.
+
+When merging the master configuration and the local repo configuration, merging will occur as follows:
+
+- keys that contain string or bool will be override the master by the local.
+- keys that contain lists will append the local list to the master list.
+- keys that contain hashes will append the key value pair of the local to the master. In the case of duplicates, the
+  local will override.
+- One exception is with `lgtm_add`. The keys `pull_request` and `issue` will append values from the local to the master.
+  In the future, `lgtm_add` may get broken up into two separate options for consistency. This would not occur until
+  version 2.0.
+
 ## Triage Labels
 
 Label Bot will mark new issue with `triage`.
