@@ -30,6 +30,9 @@ rules:
   - labels: [lgtm-labels]
     patterns: ['label_bot/lgtm_labels.py']
 
+  - labels: [add-remove-labels]
+    patterns: ['label_bot/add_remove_labels.py']
+
 # Triage
 
 triage_add: 'triage'
@@ -131,6 +134,10 @@ labels:
 - name: lgtm-labels
   color: subcategory
   description: LGTM labels library.
+
+- name: add-remove-labels
+  color: subcategory
+  description: Add/remove labels library.
 
 - name: wip-labels
   color: subcategory

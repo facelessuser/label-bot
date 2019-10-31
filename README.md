@@ -50,12 +50,12 @@ available bot on the marketplace.
 
 ## Which Configuration Gets Used?
 
-Sync commands, which occur on push and via `@bot sync labels` are always run using the configuration file on `master`.
+[Sync](#sync) commands, which occur on pushes to master and via `@bot sync labels` commands in pull request and issues,
+are always run using the configuration file on `master`.
 
 For issues, the configuration on master gets used as there is no configuration associated with an issue.
 
-For pull requests, the configuration file in the pull gets used except when issuing a [sync](#sync) command. When
-issuing the `@bot sync labels` command from a comment in a pull request, the configuration in master will only be used.
+For pull requests, the configuration file in the pull gets used except when issuing a [sync](#sync) command.
 
 All commands issued in the body of a pull request, issue, or comment in an issue or pull request are restricted to
 owners and collaborators.
@@ -71,16 +71,16 @@ project:
 triage_label: triage
 ```
 
-If you want to turn off triage, because you are creating the issue, and have a good understanding of it, you can attach
-the `skip-triage` label. If you prefer to rename it, or add additional labels, simply specify a different name(s) using
+If you want to turn off triage, because you are creating the issue and have a good understanding of it, you can attach
+the `skip-triage` label. If you prefer to rename it or add additional labels, simply specify a different name(s) using
 the following option:
 
 ```yml
 triage_skip: [skip-triage]
 ```
 
-If you'd like to remove labels on triage as well, you can use the `triage_remove` option. This is good if you need to
-but it back in the triage state via a retrigger and reset some labels.
+If you'd like to remove labels when running the command triage as well, you can use the `triage_remove` option. This is
+good if you need to but it back in the triage state via a retrigger and reset some labels.
 
 ```yml
 triage_remove: [confirmed]
@@ -316,13 +316,13 @@ You can force the bot to retrigger checks by commenting in issues. If a task fai
 mentioning the bot's name, and then asking it to retrigger:
 
 ```
-@gir-bot retrigger auto-labels
+@bot retrigger auto-labels
 ```
 
 If you want to rerun all checks, you can ask it to run `all`:
 
 ```
-@gir-bot retrigger all
+@bot retrigger all
 ```
 
 Available checks that can be retriggered are: `wip`, `review`, `triage`, and `auto-label`. `triage` cannot be run in
@@ -333,7 +333,7 @@ pull requests, and the other are not run outside of pull requests.
 If desired, you can also resync the labels on demand with the following command:
 
 ```
-@gir-bot sync labels
+@bot sync labels
 ```
 
 This will cause the repository's labels to be synced with the `.github/labels.yml` file on `master`.
@@ -358,7 +358,7 @@ lgtm_remove:
 Then we can simply run the following command in the issue's comments:
 
 ```
-@gir-bot lgtm
+@bot lgtm
 ```
 
 Let's say we have a pull request, and we want to clear `needs-review` label, but also tag it with the label `approved`.
@@ -374,7 +374,12 @@ lgtm_add:
   pull_request: [approved]
 ```
 
-Then when we run `@gir-bot lgtm`, `needs-review` will be removed, and `approved` will be added.
+Then when we run `@bot lgtm`, `needs-review` will be removed, and `approved` will be added.
+
+### Add and Remove
+
+You can add or remove labels with the commands `@bot add label-name` or `@bot remove label-name`. You can specify
+multiple labels by separating them with comas: `@bot add Documents, Core Code`.
 
 [license-image-mit]: https://img.shields.io/badge/license-MIT-blue.svg
 [github-ci-image]: https://github.com/gir-bot/label-bot/workflows/build/badge.svg
