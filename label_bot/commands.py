@@ -82,7 +82,10 @@ async def command_sync(event, gh):
 async def command_lgtm(event, gh):
     """Handle "looks good to me" command."""
 
-    if event.data['issue']['state'] != 'open':
+    if (
+        ('issue' in event.data and event.data['issue']['state'] != 'open') or
+        ('pull_request' in event.data and event.data['pull_request']['state'] != 'open')
+    ):
         return None
 
     await asyncio.sleep(1)
@@ -106,7 +109,10 @@ async def command_lgtm(event, gh):
 async def command_add_remove(event, gh, labels, remove=False):
     """Handle "looks good to me" command."""
 
-    if event.data['issue']['state'] != 'open':
+    if (
+        ('issue' in event.data and event.data['issue']['state'] != 'open') or
+        ('pull_request' in event.data and event.data['pull_request']['state'] != 'open')
+    ):
         return None
 
     valid_labels = []
