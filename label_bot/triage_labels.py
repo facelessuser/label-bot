@@ -9,7 +9,7 @@ DEFAULT_SKIP = ['skip-triage']
 DEFAULT_REMOVE = []
 
 
-async def run(event, gh, config):
+async def run(event, gh, config, **kwargs):
     """Run task."""
 
     try:

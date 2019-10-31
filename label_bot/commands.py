@@ -144,10 +144,11 @@ async def command_add_remove(event, gh, labels, remove=False):
     return Command(add_remove_labels.run, util.Event(event_type, payload), None, False, kwargs)
 
 
-async def run_all_pull_actions(event, gh, config):
+async def run_all_pull_actions(event, gh, config, **kwargs):
     """Run all label specific actions."""
 
     await wip_labels.run(event, gh, config)
+    await asyncio.sleep(1)
     await review_labels.run(event, gh, config)
     await asyncio.sleep(1)
     await wildcard_labels.pending(event, gh)

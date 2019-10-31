@@ -23,7 +23,7 @@ async def run(event, gh, config):
         )
 
 
-async def lgtm(event, gh, config):
+async def lgtm(event, gh, config, **kwargs):
     """Remove specified labels, and set desired labels if specified."""
 
     key = 'pull_request' if event.event == 'pull_request' else 'issue'

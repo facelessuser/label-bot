@@ -5,7 +5,7 @@ import sys
 from . import util
 
 
-async def run(event, gh, config, labels=None, remove=False):
+async def run(event, gh, config, labels=None, remove=False, **kwargs):
     """Run the task."""
 
     if not labels:

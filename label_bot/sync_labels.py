@@ -202,7 +202,7 @@ async def pending(event, gh):
     )
 
 
-async def run(event, gh, config):
+async def run(event, gh, config, **kwargs):
     """Run task."""
 
     try:
