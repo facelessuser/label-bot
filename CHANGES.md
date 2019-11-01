@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- **FIX**: Ensure that configuration failures cause a task to fail.
+- **Fix**: Index all repository labels before modifying the repository labels.
+
 ## 1.3.0
 
 - **NEW**: Optionally allow specifying a master configuration file template from another repository.

@@ -129,15 +129,17 @@ async def sync(event, gh, config):
     if not labels:
         return
 
+    # Get all labels before we start modifying labels.
     count = 0
-    calls = 1
+    repo_labels = []
     async for label in gh.getiter(event.labels_url, accept=util.LABEL_HEADER):
-
         count += 1
-        if (count % 20) == 0:
+        if (count % 30) == 0:
             await asyncio.sleep(1)
-            calls += 1
+        repo_labels.append(label)
 
+    # Iterate labels deleting or updating labels that need it.
+    for label in repo_labels:
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
@@ -147,9 +149,8 @@ async def sync(event, gh, config):
                 data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
                 accept=util.LABEL_HEADER
             )
-            updated.add(edit.old)
-            updated.add(edit.new)
-            calls += 1
+            updated.add(edit.old.lower())
+            updated.add(edit.new.lower())
             await asyncio.sleep(1)
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
@@ -159,21 +160,18 @@ async def sync(event, gh, config):
                     {'name': label['name']},
                     accept=util.LABEL_HEADER
                 )
-                calls += 1
                 await asyncio.sleep(1)
             else:
                 print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
-            updated.add(label['name'])
+            updated.add(label['name'].lower())
 
-        if (calls % 20) == 0:
-            await asyncio.sleep(30)
-
+    # Create any labels that need creation.
     for value in labels:
         name = value['name']
         color = value['color']
         description = value.get('description', '')
 
-        if name not in updated:
+        if name.lower() not in updated:
             print('    Creating {}: #{} "{}"'.format(name, color, description))
             await gh.post(
                 event.labels_url,
@@ -181,10 +179,6 @@ async def sync(event, gh, config):
                 accept=util.LABEL_HEADER
             )
             await asyncio.sleep(1)
-            calls += 1
-
-            if (calls % 20) == 0:
-                await asyncio.sleep(30)
 
 
 async def pending(event, gh):
