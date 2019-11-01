@@ -4,7 +4,6 @@ import base64
 import yaml
 import traceback
 import sys
-import os
 from gidgethub import sansio
 try:
     from yaml import CLoader as Loader
@@ -114,28 +113,8 @@ class Event:
         """Get label configuration file."""
 
         await asyncio.sleep(1)
-        master_config = {}
-        master = os.environ.get("GH_CONFIG", '')
-        if master:
-            try:
-                user, repo, path, ref = master.split(':')
-                result = await gh.getitem(
-                    'https://api.github.com/repos/{user}/{repo}/contents/{path}/{?ref}',
-                    {
-                        'user': user,
-                        'repo': repo,
-                        'path': path,
-                        'ref': ref
-                    }
-                )
-                content = base64.b64decode(result['content']).decode('utf-8')
-                master_config = yaml.load(content, Loader=Loader)
-            except Exception:
-                traceback.print_exc(file=sys.stdout)
-                # Return an empty config which will cause label sync not to run
-                return master_config
-
         config = {}
+        template_config = {}
         try:
             result = await gh.getitem(
                 self.contents_url,
@@ -146,8 +125,23 @@ class Event:
             )
             content = base64.b64decode(result['content']).decode('utf-8')
             config = yaml.load(content, Loader=Loader)
+            template = config.get('template', '')
+            if template:
+                user, repo, path, ref = template.split(':')
+                result = await gh.getitem(
+                    'https://api.github.com/repos/{user}/{repo}/contents/{path}/{?ref}',
+                    {
+                        'user': user,
+                        'repo': repo,
+                        'path': path,
+                        'ref': ref
+                    }
+                )
+                content = base64.b64decode(result['content']).decode('utf-8')
+                template_config = yaml.load(content, Loader=Loader)
         except Exception:
             traceback.print_exc(file=sys.stdout)
-            return config
+            # Return an empty configuration if anything went wrong
+            return template_config
 
-        return self.merge_config(master_config, config)
+        return self.merge_config(template_config, config)
