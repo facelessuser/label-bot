@@ -60,28 +60,25 @@ For pull requests, the configuration file in the pull gets used except when issu
 All commands issued in the body of a pull request, issue, or comment in an issue or pull request are restricted to
 owners and collaborators.
 
-## Using a Master Configuration Template
+## Using a Configuration Template
 
-You can use a master configuration file and share it across repositories. This is a good way to define common labels
-that you wish to reuse. Point to the master configuration file by setting the environmental variable `GH_CONFIG` on your
-server. It should be in the form `user:repo:path/to/config:ref`. In our case it is
-`facelessuser:master-labels:labels.yml:master`.
+You can use a configuration template file and share it across repositories. This is a good way to define common labels
+that you wish to reuse. You can set the template to use in your local repository file in `.github/labels.yml`. In our
+case it is `facelessuser:master-labels:labels.yml:master`.
 
-When merging the master configuration and the local repo configuration, merging will occur as follows:
+When merging the template configuration and the local repo configuration, merging will occur as follows:
 
-- keys that contain string or bool will be override the master by the local.
-- keys that contain lists will append the local list to the master list.
-- keys that contain hashes will append the key value pair of the local to the master. In the case of duplicates, the
-  local will override.
-- One exception is with `lgtm_add`. The keys `pull_request` and `issue` will append values from the local to the master.
-  In the future, `lgtm_add` may get broken up into two separate options for consistency. This would not occur until
-  version 2.0.
+- keys that contain string or bool will override the template with the local value.
+- keys that contain list values will append the local list to the template list.
+- keys that contain hash values will append the key value pair of the local to the template. In the case of duplicates,
+  the local will override.
+- One exception is with `lgtm_add`. The keys `pull_request` and `issue` will append values from the local to the
+  template. In the future, `lgtm_add` may get broken up into two separate options for consistency. This would not occur
+  until version 2.0.
 
-Even with a master configuration file, you still must specify a `.github/labels.yml` file in your repository, even if
-all it contains is an empty hash `{}`. If you specify a master configuration, if either the master or local
-configuration file fails, an empty set of options will be returned. Since repository label syncing will not occur when
-the `labels` option is missing, this will prevent all your repository labels from getting wiped out in the case of a
-failure.
+If either the template or local configuration file fails to be acquired, an empty set of options will be returned. Since
+repository label syncing will not occur when the `labels` option is missing, this will prevent all your repository
+labels from getting wiped out in the case of a failure.
 
 ## Triage Labels
 

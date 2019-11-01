@@ -1,5 +1,7 @@
 # Wildcard labels
 
+template: 'facelessuser:master-labels:labels.yml:master'
+
 brace_expansion: true
 
 rules:
