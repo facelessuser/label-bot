@@ -61,6 +61,8 @@ async def run(event, gh, config, **kwargs):
     """Run the task."""
 
     try:
+        if config.get('error', ''):
+            raise Exception(config['error'])
         await review(event, gh, config)
         success = True
     except Exception:

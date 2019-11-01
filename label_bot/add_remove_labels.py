@@ -8,10 +8,13 @@ from . import util
 async def run(event, gh, config, labels=None, remove=False, **kwargs):
     """Run the task."""
 
-    if not labels:
-        return
-
     try:
+        if config.get('error', ''):
+            raise Exception(config['error'])
+
+        if not labels:
+            return
+
         await add_remove(event, gh, config, labels, remove)
         success = True
     except Exception:

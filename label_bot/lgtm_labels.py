@@ -9,6 +9,8 @@ async def run(event, gh, config):
     """Run the task."""
 
     try:
+        if config.get('error', ''):
+            raise Exception(config['error'])
         await lgtm(event, gh, config)
         success = True
     except Exception:

@@ -114,7 +114,6 @@ class Event:
 
         await asyncio.sleep(1)
         config = {}
-        template_config = {}
         try:
             result = await gh.getitem(
                 self.contents_url,
@@ -139,9 +138,9 @@ class Event:
                 )
                 content = base64.b64decode(result['content']).decode('utf-8')
                 template_config = yaml.load(content, Loader=Loader)
+                config = self.merge_config(template_config, config)
         except Exception:
             traceback.print_exc(file=sys.stdout)
-            # Return an empty configuration if anything went wrong
-            return template_config
+            config = {'error': str(traceback.format_exc())}
 
-        return self.merge_config(template_config, config)
+        return config
