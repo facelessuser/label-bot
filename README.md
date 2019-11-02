@@ -48,6 +48,8 @@ available bot on the marketplace.
 4. If you are using a separate bot account to communicate with your repos, you may have to add the bot as a
    collaborator.
 
+[access]: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line
+
 ## Which Configuration Gets Used?
 
 [Sync](#sync) commands, which occur on pushes to master and via `@bot sync labels` commands in pull request and issues,
