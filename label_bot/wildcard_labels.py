@@ -1,9 +1,7 @@
 """Wildcard labels."""
-import asyncio
 from wcmatch import glob
 import traceback
 import sys
-import os
 from . import util
 
 
@@ -91,7 +89,7 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
     """Update issue labels."""
 
     remove = []
-    async for name in event.live_labels(gh):
+    async for name in event.get_issue_labels(gh):
         low = name.lower()
         if low not in remove_labels:
             if low in add_labels:
@@ -101,40 +99,14 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
 
     add = [label for label in add_labels.values()]
 
-    if add:
-        await gh.post(
-            event.issue_labels_url,
-            {'number': event.number},
-            data={'labels': add},
-            accept=util.LABEL_HEADER
-        )
-
-    count = 0
-    for label in remove:
-        count += 1
-        if (count % 2) == 0:
-            await asyncio.sleep(1)
-
-        await gh.delete(
-            event.issue_labels_url,
-            {'number': event.number, 'name': label},
-            accept=util.LABEL_HEADER
-        )
+    await event.add_issue_labels(gh, add)
+    await event.remove_issue_labels(gh, remove)
 
 
 async def pending(event, gh):
     """Set task to pending."""
 
-    await gh.post(
-        event.statuses_url,
-        {'sha': event.sha},
-        data={
-            "state": "pending",
-            "target_url": "https://github.com/gir-bot/label-bot",
-            "description": "Pending",
-            "context": "{}/labels/auto-labels".format(os.environ.get("GH_BOT"))
-        }
-    )
+    await event.set_status(gh, util.EVT_PENDING, 'labels/auto-labels', 'Pending')
 
 
 async def run(event, gh, config, **kwargs):
@@ -149,13 +121,9 @@ async def run(event, gh, config, **kwargs):
         traceback.print_exc(file=sys.stdout)
         success = False
 
-    await gh.post(
-        event.statuses_url,
-        {'sha': event.sha},
-        data={
-            "state": "success" if success else "failure",
-            "target_url": "https://github.com/gir-bot/label-bot",
-            "description": "Task completed" if success else "Failed to complete",
-            "context": "{}/labels/auto-labels".format(os.environ.get("GH_BOT"))
-        }
+    await event.set_status(
+        gh,
+        util.EVT_SUCCESS if success else util.EVT_FAILURE,
+        'labels/auto-labels',
+        "Task completed" if success else "Failed to complete task"
     )

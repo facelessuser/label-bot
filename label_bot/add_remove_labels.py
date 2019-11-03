@@ -1,8 +1,6 @@
 """Looks good to me command."""
-import asyncio
 import traceback
 import sys
-from . import util
 
 
 async def run(event, gh, config, labels=None, remove=False, **kwargs):
@@ -22,10 +20,9 @@ async def run(event, gh, config, labels=None, remove=False, **kwargs):
         success = False
 
     if not success:
-        await gh.post(
-            event.issues_comments_url,
-            {"number": event.number},
-            data={"body": "Oops! There was a problem transitioning the issue."}
+        await event.post_comment(
+            gh,
+            'Oops! There was a problem {} some of the labels.'.format('adding' if not remove else 'removing')
         )
 
 
@@ -48,7 +45,7 @@ async def add_remove(event, gh, config, labels, remove_mode):
 
     add = []
     remove = []
-    async for name in event.live_labels(gh):
+    async for name in event.get_issue_labels(gh):
         low = name.lower()
         if not remove_mode and low in labels:
             del labels[low]
@@ -58,22 +55,5 @@ async def add_remove(event, gh, config, labels, remove_mode):
     if not remove_mode:
         add = [x for x in labels.values()]
 
-    count = 0
-    for label in remove:
-        count += 1
-        if (count % 2) == 0:
-            await asyncio.sleep(1)
-
-        await gh.delete(
-            event.issue_labels_url,
-            {'number': event.number, 'name': label},
-            accept=util.LABEL_HEADER
-        )
-
-    if add:
-        await gh.post(
-            event.issue_labels_url,
-            {'number': event.number},
-            data={'labels': add},
-            accept=util.LABEL_HEADER
-        )
+    await event.remove_issue_labels(gh, remove)
+    await event.add_issue_labels(gh, add)

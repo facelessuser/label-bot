@@ -4,6 +4,7 @@ import base64
 import yaml
 import traceback
 import sys
+import os
 from gidgethub import sansio
 try:
     from yaml import CLoader as Loader
@@ -25,6 +26,11 @@ LIST_VALUES = {
 }
 
 DICT_VALUES = {'colors'}
+
+EVT_SUCCESS = "success"
+EVT_FAILURE = "failure"
+EVT_ERROR = "error"
+EVT_PENDING = "pending"
 
 
 class Event:
@@ -68,22 +74,6 @@ class Event:
         """Decode label."""
 
         return name.encode('utf-16', 'surrogatepass').decode('utf-16')
-
-    async def live_labels(self, gh):
-        """Get the current, live labels."""
-
-        count = 0
-        accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
-        async for label in gh.getiter(self.issue_labels_url, {'number': self.number}, accept=accept):
-
-            # Not sure how many get returned before it must page, so sleep for
-            # one second on the arbitrary value of 20. That is a lot of labels for
-            # one issue, so it is probably not going to trigger often.
-            count += 1
-            if (count % 20) == 0:
-                await asyncio.sleep(1)
-
-            yield label['name']
 
     def merge_config(self, master_config, config):
         """Merge master config and local config."""
@@ -144,3 +134,106 @@ class Event:
             config = {'error': str(traceback.format_exc())}
 
         return config
+
+    async def set_status(self, gh, status, context, msg):
+        """Set status."""
+
+        await gh.post(
+            self.statuses_url,
+            {'sha': self.sha},
+            data={
+                "state": status,
+                "target_url": "https://github.com/gir-bot/label-bot",
+                "description": msg,
+                "context": "{}/{}".format(os.environ.get("GH_BOT"), context)
+            }
+        )
+
+    async def post_comment(self, gh, comment):
+        """Post comment."""
+
+        await gh.post(
+            self.issues_comments_url,
+            {"number": self.number},
+            data={"body": comment}
+        )
+
+    async def get_repo_labels(self, gh):
+        """Get the repository labels."""
+
+        count = 0
+        async for label in gh.getiter(self.labels_url, accept=LABEL_HEADER):
+            count += 1
+            if (count % 30) == 0:
+                await asyncio.sleep(1)
+            yield label
+
+    async def update_repo_label(self, gh, old_name, new_name, color, description):
+        """Update the repository label."""
+
+        await gh.patch(
+            self.labels_url,
+            {'name': old_name},
+            data={'new_name': new_name, 'color': color, 'description': description},
+            accept=LABEL_HEADER
+        )
+
+    async def remove_repo_label(self, gh, label):
+        """Remove repository label."""
+
+        await gh.delete(
+            self.labels_url,
+            {'name': label},
+            accept=LABEL_HEADER
+        )
+
+    async def add_repo_label(self, gh, name, color, description):
+        """Add repository label."""
+
+        await gh.post(
+            self.labels_url,
+            data={'name': name, 'color': color, 'description': description},
+            accept=LABEL_HEADER
+        )
+
+    async def get_issue_labels(self, gh):
+        """Get the issue's labels."""
+
+        count = 0
+        accept = ','.join([sansio.accept_format(), 'application/vnd.github.symmetra-preview+json'])
+        async for label in gh.getiter(self.issue_labels_url, {'number': self.number}, accept=accept):
+
+            # Not sure how many get returned before it must page, so sleep for
+            # one second on the arbitrary value of 20. That is a lot of labels for
+            # one issue, so it is probably not going to trigger often.
+            count += 1
+            if (count % 20) == 0:
+                await asyncio.sleep(1)
+
+            yield label['name']
+
+    async def add_issue_labels(self, gh, labels):
+        """Add issue labels."""
+
+        if labels:
+            await gh.post(
+                self.issue_labels_url,
+                {'number': self.number},
+                data={'labels': labels},
+                accept=LABEL_HEADER
+            )
+
+    async def remove_issue_labels(self, gh, labels):
+        """Remove issue labels."""
+
+        count = 0
+        for label in labels:
+            count += 1
+            if (count % 2) == 0:
+                await asyncio.sleep(1)
+
+            await gh.delete(
+                self.issue_labels_url,
+                {'number': self.number, 'name': label},
+                accept=LABEL_HEADER
+            )

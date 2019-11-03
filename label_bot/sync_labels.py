@@ -1,7 +1,6 @@
 """Label syncing."""
 import asyncio
 from collections import namedtuple
-import os
 import re
 import traceback
 import sys
@@ -130,36 +129,21 @@ async def sync(event, gh, config):
         return
 
     # Get all labels before we start modifying labels.
-    count = 0
-    repo_labels = []
-    async for label in gh.getiter(event.labels_url, accept=util.LABEL_HEADER):
-        count += 1
-        if (count % 30) == 0:
-            await asyncio.sleep(1)
-        repo_labels.append(label)
+    repo_labels = [label async for label in event.get_repo_labels(gh)]
 
     # Iterate labels deleting or updating labels that need it.
     for label in repo_labels:
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
-            await gh.patch(
-                event.labels_url,
-                {'name': edit.old},
-                data={'new_name': edit.new, 'color': edit.color, 'description': edit.description},
-                accept=util.LABEL_HEADER
-            )
+            await event.edit_repo_label(gh, edit.old, edit.new, edit.color, edit.description)
             updated.add(edit.old.lower())
             updated.add(edit.new.lower())
             await asyncio.sleep(1)
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
                 print('    Deleting {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
-                await gh.delete(
-                    event.labels_url,
-                    {'name': label['name']},
-                    accept=util.LABEL_HEADER
-                )
+                await event.remove_repo_label(gh, label['name'])
                 await asyncio.sleep(1)
             else:
                 print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
@@ -173,27 +157,14 @@ async def sync(event, gh, config):
 
         if name.lower() not in updated:
             print('    Creating {}: #{} "{}"'.format(name, color, description))
-            await gh.post(
-                event.labels_url,
-                data={'name': name, 'color': color, 'description': description},
-                accept=util.LABEL_HEADER
-            )
+            event.add_repo_label(gh, name, color, description)
             await asyncio.sleep(1)
 
 
 async def pending(event, gh):
     """Set task to pending."""
 
-    await gh.post(
-        event.statuses_url,
-        {'sha': event.sha},
-        data={
-            "state": "pending",
-            "target_url": "https://github.com/gir-bot/label-bot",
-            "description": "Pending",
-            "context": "{}/labels/sync".format(os.environ.get("GH_BOT"))
-        }
-    )
+    await event.set_status(gh, util.EVT_PENDING, 'labels/sync', 'Pending')
 
 
 async def run(event, gh, config, **kwargs):
@@ -208,13 +179,9 @@ async def run(event, gh, config, **kwargs):
         traceback.print_exc(file=sys.stdout)
         success = False
 
-    await gh.post(
-        event.statuses_url,
-        {'sha': event.sha},
-        data={
-            "state": "success" if success else "failure",
-            "target_url": "https://github.com/gir-bot/label-bot",
-            "description": "Task completed" if success else "Failed to complete",
-            "context": "{}/labels/sync".format(os.environ.get("GH_BOT"))
-        }
+    await event.set_status(
+        gh,
+        util.EVT_SUCCESS if success else util.EVT_FAILURE,
+        'labels/sync',
+        "Task completed" if success else "Failed to complete task"
     )
