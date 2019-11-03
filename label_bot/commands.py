@@ -36,12 +36,8 @@ class Command(namedtuple('Command', ['command', 'event', 'pending', 'live', 'kwa
     """Command."""
 
 
-async def command_retrigger(event, action, gh):
-    """Handle retrigger command."""
-
-    # These events shouldn't be run on a closed issue.
-    if event.data['issue']['state'] != 'open':
-        return None
+async def get_issue_payload(gh, event):
+    """Get the issue payload."""
 
     await asyncio.sleep(1)
     payload = {'repository': event.data['repository']}
@@ -53,16 +49,27 @@ async def command_retrigger(event, action, gh):
         key = 'pull_request'
         issue = await gh.getitem(issue['pull_request']['url'])
     payload[key] = issue
+    return event_type, payload
 
-    if action in ('triage', 'all') and key == 'issue':
+
+async def command_retrigger(event, action, gh):
+    """Handle retrigger command."""
+
+    # These events shouldn't be run on a closed issue.
+    if event.data['issue']['state'] != 'open':
+        return None
+
+    event_type, payload = await get_issue_payload(gh, event)
+
+    if action in ('triage', 'all') and event_type == 'issues':
         command = Command(triage_labels.run, util.Event(event_type, payload), None, False, {})
-    elif action == 'all' and key == 'pull_request':
+    elif action == 'all' and event_type == 'pull_request':
         command = Command(run_all_pull_actions, util.Event(event_type, payload), None, False, {})
-    elif action == 'review' and key == 'pull_request':
+    elif action == 'review' and event_type == 'pull_request':
         command = Command(review_labels.run, util.Event(event_type, payload), None, False, {})
-    elif action == 'wip' and key == 'pull_request':
+    elif action == 'wip' and event_type == 'pull_request':
         command = Command(wip_labels.run, util.Event(event_type, payload), None, True, {})
-    elif action == 'auto-labels' and key == 'pull_request':
+    elif action == 'auto-labels' and event_type == 'pull_request':
         command = Command(wildcard_labels.run, util.Event(event_type, payload), wildcard_labels.pending, True, {})
     else:
         command = None
@@ -90,15 +97,7 @@ async def command_lgtm(event, gh):
 
     await asyncio.sleep(1)
     if 'comment' in event.data:
-        payload = {'repository': event.data['repository']}
-        issue = await gh.getitem(event.data['comment']['issue_url'])
-        event_type = 'issues'
-        key = 'issue'
-        if 'pull_request' in issue:
-            event_type = 'pull_request'
-            key = 'pull_request'
-            issue = await gh.getitem(issue['pull_request']['url'])
-        payload[key] = issue
+        event_type, payload = await get_issue_payload(gh, event)
     else:
         event_type = event.event
         payload = event.data
@@ -128,15 +127,7 @@ async def command_add_remove(event, gh, labels, remove=False):
 
     await asyncio.sleep(1)
     if 'comment' in event.data:
-        payload = {'repository': event.data['repository']}
-        issue = await gh.getitem(event.data['comment']['issue_url'])
-        event_type = 'issues'
-        key = 'issue'
-        if 'pull_request' in issue:
-            event_type = 'pull_request'
-            key = 'pull_request'
-            issue = await gh.getitem(issue['pull_request']['url'])
-        payload[key] = issue
+        event_type, payload = await get_issue_payload(gh, event)
     else:
         event_type = event.event
         payload = event.data

@@ -1,8 +1,6 @@
 """Triage labels."""
-import asyncio
 import traceback
 import sys
-from . import util
 
 DEFAULT = 'triage'
 DEFAULT_SKIP = ['skip-triage']
@@ -22,11 +20,7 @@ async def run(event, gh, config, **kwargs):
         success = False
 
     if not success:
-        await gh.post(
-            event.issues_comments_url,
-            {'number': event.number},
-            data={'body': 'Oops! It appears I am having difficulty marking this issue for triage.'}
-        )
+        await event.post_comment(gh, 'Oops! It appears I am having difficulty marking this issue for triage.')
 
 
 async def triage(event, gh, config):
@@ -44,7 +38,7 @@ async def triage(event, gh, config):
     if not triage_label:
         return
 
-    async for name in event.live_labels(gh):
+    async for name in event.get_issue_labels(gh):
         low = name.lower()
         if low in skip:
             return
@@ -55,22 +49,5 @@ async def triage(event, gh, config):
 
     add = [x for x in add_labels.values()]
 
-    count = 0
-    for label in remove:
-        count += 1
-        if (count % 2) == 0:
-            await asyncio.sleep(1)
-
-        await gh.delete(
-            event.issue_labels_url,
-            {'number': event.number, 'name': label},
-            accept=util.LABEL_HEADER
-        )
-
-    if add:
-        await gh.post(
-            event.issue_labels_url,
-            {'number': event.number},
-            data={'labels': add},
-            accept=util.LABEL_HEADER
-        )
+    await event.remove_issue_labels(gh, remove)
+    await event.add_issue_labels(gh, add)

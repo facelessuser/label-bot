@@ -1,6 +1,4 @@
 """Review labels."""
-import asyncio
-import os
 import traceback
 import sys
 from . import util
@@ -25,7 +23,7 @@ async def review(event, gh, config):
     if not review_label:
         return
 
-    async for name in event.live_labels(gh):
+    async for name in event.get_issue_labels(gh):
         low = name.lower()
         if low in skip:
             return
@@ -36,25 +34,8 @@ async def review(event, gh, config):
 
     add = [x for x in add_labels.values()]
 
-    count = 0
-    for label in remove:
-        count += 1
-        if (count % 2) == 0:
-            await asyncio.sleep(1)
-
-        await gh.delete(
-            event.issue_labels_url,
-            {'number': event.number, 'name': label},
-            accept=util.LABEL_HEADER
-        )
-
-    if add:
-        await gh.post(
-            event.issue_labels_url,
-            {'number': event.number},
-            data={'labels': add},
-            accept=util.LABEL_HEADER
-        )
+    await event.remove_issue_labels(gh, remove)
+    await event.add_issue_labels(gh, add)
 
 
 async def run(event, gh, config, **kwargs):
@@ -69,13 +50,9 @@ async def run(event, gh, config, **kwargs):
         traceback.print_exc(file=sys.stdout)
         success = False
 
-    await gh.post(
-        event.statuses_url,
-        {'sha': event.sha},
-        data={
-            "state": "success" if success else "failure",
-            "target_url": "https://github.com/gir-bot/label-bot",
-            "description": "Task completed" if success else "Failed to complete",
-            "context": "{}/labels/review".format(os.environ.get("GH_BOT"))
-        }
+    await event.set_status(
+        gh,
+        util.EVT_SUCCESS if success else util.EVT_FAILURE,
+        'labels/review',
+        "Task completed" if success else "Failed to complete task"
     )
