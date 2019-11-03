@@ -136,7 +136,7 @@ async def sync(event, gh, config):
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
             print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
-            await event.edit_repo_label(gh, edit.old, edit.new, edit.color, edit.description)
+            await event.update_repo_label(gh, edit.old, edit.new, edit.color, edit.description)
             updated.add(edit.old.lower())
             updated.add(edit.new.lower())
             await asyncio.sleep(1)
