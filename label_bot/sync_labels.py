@@ -17,7 +17,7 @@ def _validate_str(name):
     """Validate name."""
 
     if not isinstance(name, str):
-        raise TypeError("Key value is not of type 'str', type '{}' received instead".format(type(name)))
+        raise TypeError(f"Key value is not of type 'str', type '{type(name)}' received instead")
 
 
 def _validate_color(color):
@@ -26,7 +26,7 @@ def _validate_color(color):
     _validate_str(color)
 
     if RE_VALID_COLOR.match(color) is None:
-        raise ValueError('{} is not a valid color'.format(color))
+        raise ValueError(f'{color} is not a valid color')
 
 
 def _resolve_color(color, colors):
@@ -46,7 +46,7 @@ def _parse_colors(config):
             _validate_color(color)
             _validate_str(name)
             if name in colors:
-                raise ValueError("The name '{}' is already present in the color list".format(name))
+                raise ValueError(f"The name '{name}' is already present in the color list")
             colors[name] = color[1:]
         except Exception:
             traceback.print_exc(file=sys.stdout)
@@ -98,9 +98,9 @@ def _parse_labels(config):
             if 'renamed' in value:
                 _validate_str(value['renamed'])
             if 'description' in value and not isinstance(value['description'], str):
-                raise ValueError("Description for '{}' should be of type str".format(name))
+                raise ValueError(f"Description for '{name}' should be of type str")
             if name.lower() in seen:
-                raise ValueError("The name '{}' is already present in the label list".format(name))
+                raise ValueError(f"The name '{name}' is already present in the label list")
             seen.add(name.lower())
             labels.append(value)
         except Exception:
@@ -135,18 +135,18 @@ async def sync(event, gh, config):
     for label in repo_labels:
         edit = _find_label(labels, label['name'], label['color'], label['description'])
         if edit is not None and edit.modified:
-            print('    Updating {}: #{} "{}"'.format(edit.new, edit.color, edit.description))
+            print(f'    Updating {edit.new}: #{edit.color} "{edit.description}"')
             await event.update_repo_label(gh, edit.old, edit.new, edit.color, edit.description)
             updated.add(edit.old.lower())
             updated.add(edit.new.lower())
             await asyncio.sleep(1)
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
-                print('    Deleting {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
+                print(f'    Deleting {label["name"]}: #{label["color"]} "{label["description"]}"')
                 await event.remove_repo_label(gh, label['name'])
                 await asyncio.sleep(1)
             else:
-                print('    Skipping {}: #{} "{}"'.format(label['name'], label['color'], label['description']))
+                print(f'    Skipping {label["name"]}: #{label["color"]} "{label["description"]}"')
             updated.add(label['name'].lower())
 
     # Create any labels that need creation.
@@ -156,7 +156,7 @@ async def sync(event, gh, config):
         description = value.get('description', '')
 
         if name.lower() not in updated:
-            print('    Creating {}: #{} "{}"'.format(name, color, description))
+            print(f'    Creating {name}: #{color} "{description}"')
             event.add_repo_label(gh, name, color, description)
             await asyncio.sleep(1)
 

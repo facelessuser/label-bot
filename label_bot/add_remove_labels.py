@@ -20,9 +20,10 @@ async def run(event, gh, config, labels=None, remove=False, **kwargs):
         success = False
 
     if not success:
+        action = 'adding' if not remove else 'removing'
         await event.post_comment(
             gh,
-            'Oops! There was a problem {} some of the labels.'.format('adding' if not remove else 'removing')
+            f'Oops! There was a problem {action} some of the labels.'
         )
 
 
