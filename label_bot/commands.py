@@ -173,7 +173,7 @@ async def run(event, gh, bot):
     comment = await gh.getitem(event.data[etype]['url'], accept=util.HTML_HEADER)
     soup = BeautifulSoup(comment['body_html'], 'html.parser')
 
-    for el in soup.select('a.user-mention:contains("@{name}")[href$="/{name}"]'.format(name=bot)):
+    for el in soup.select(f'a.user-mention:contains("@{bot}")[href$="/{bot}"]'):
 
         sib = el.next_sibling
         if not isinstance(sib, str):

@@ -145,7 +145,7 @@ class Event:
                 "state": status,
                 "target_url": "https://github.com/gir-bot/label-bot",
                 "description": msg,
-                "context": "{}/{}".format(os.environ.get("GH_BOT"), context)
+                "context": f'{os.environ.get("GH_BOT")}/{context}'
             }
         )
 
