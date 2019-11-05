@@ -22,8 +22,8 @@ async def run(event, gh, config):
 async def lgtm(event, gh, config, **kwargs):
     """Remove specified labels, and set desired labels if specified."""
 
-    key = 'pull_request' if event.event == 'pull_request' else 'issue'
-    add_labels = {value.lower(): value for value in config.get('lgtm_add', {}).get(key, [])}
+    key = 'lgtm_add_pull_request' if event.event == 'pull_request' else 'lgtm_add_issue'
+    add_labels = {value.lower(): value for value in config.get(key, [])}
     remove_labels = {label.lower(): label for label in config.get('lgtm_remove', [])}
 
     add = []

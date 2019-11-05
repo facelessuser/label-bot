@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- **NEW**: Add options `lgtm_add_issue` and `lgtm_add_pull_request` that are meant to replace `lgtm_add`. The old
+  `lgtm_add` will be mapped to the new options and handled internally. `lgtm_add` will be removed in version 2.0.
+
 ## 1.3.1
 
 - **FIX**: Ensure that configuration failures cause a task to fail.
