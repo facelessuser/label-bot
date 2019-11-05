@@ -157,7 +157,7 @@ async def sync(event, gh, config):
 
         if name.lower() not in updated:
             print(f'    Creating {name}: #{color} "{description}"')
-            event.add_repo_label(gh, name, color, description)
+            await event.add_repo_label(gh, name, color, description)
             await asyncio.sleep(1)
 
 
