@@ -36,6 +36,11 @@ rules:
     patterns: ['label_bot/add_remove_labels.py']
 
 
+ignores:
+  - dependencies
+  - security
+
+
 labels:
 - name: sync-labels
   color: subcategory
