@@ -74,9 +74,10 @@ When merging the template configuration and the local repo configuration, mergin
 - keys that contain list values will append the local list to the template list.
 - keys that contain hash values will append the key value pair of the local to the template. In the case of duplicates,
   the local will override.
-- One exception is with `lgtm_add`. The keys `pull_request` and `issue` will append values from the local to the
-  template. In the future, `lgtm_add` may get broken up into two separate options for consistency. This would not occur
-  until version 2.0.
+- One exception is with the legacy `lgtm_add` which is still accepted. It is recommended to use `lgtm_add_issue` and
+  `lgtm_add_pull_request`, but if you still use `lgtm_add`, its sub-keys (`pull_request` and `issue`) will append values
+  from the local to the template. In the future, `lgtm_add` will be removed in favor of `lgtm_add_issue` and
+  `lgtm_add_pull_request`. This would not occur until version 2.0.
 
 If either the template or local configuration file fails to be acquired, an empty set of options will be returned. Since
 repository label syncing will not occur when the `labels` option is missing, this will prevent all your repository
@@ -384,16 +385,15 @@ Then we can simply run the following command in the issue's comments:
 ```
 
 Let's say we have a pull request, and we want to clear `needs-review` label, but also tag it with the label `approved`.
-We can simply create the `lgtm_remove` (which is shared for both pull requests and issues), and then use the `lgtm_add`
-option to specify the desired labels to add under the key `pull_request` (if specifying for a normal issue, we'd use
-`issue`).
+We can simply create the `lgtm_remove` (which is shared for both pull requests and issues), and then use the
+`lgtm_add_pull_request` option to specify the desired labels to add (if specifying for a normal issue, we'd use
+`lgtm_add_issue`).
 
 ```yml
 lgtm_remove:
   - needs-review
 
-lgtm_add:
-  pull_request: [approved]
+lgtm_add_pull_request: [approved]
 ```
 
 Then when we run `@bot lgtm`, `needs-review` will be removed, and `approved` will be added.

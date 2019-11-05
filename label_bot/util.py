@@ -21,8 +21,9 @@ SINGLE_VALUES = {
 }
 
 LIST_VALUES = {
-    'labels', 'rules', 'wip', 'lgtm_remove', 'triage_skip',
-    'triage_remove', 'review_skip', 'review_remove'
+    'labels', 'rules', 'wip', 'lgtm_remove', 'lgtm_add_issue',
+    'lgtm_add_pull_request', 'triage_skip', 'triage_remove',
+    'review_skip', 'review_remove'
 }
 
 DICT_VALUES = {'colors'}
@@ -78,6 +79,13 @@ class Event:
     def merge_config(self, master_config, config):
         """Merge master config and local config."""
 
+        # Normalize configuration files in relation to LGTM options.
+        # Use separate options for issue and pull request.
+        for cfg in (master_config, config):
+            if 'lgtm_add' in cfg:
+                cfg['lgtm_add_issue'] = cfg['lgtm_add'].get('issue', [])
+                cfg['lgtm_add_pull_request'] = cfg['lgtm_add'].get('pull_request', [])
+
         if not master_config:
             return config
 
@@ -89,12 +97,6 @@ class Event:
             elif key in DICT_VALUES and key in master_config:
                 for k, v in value.items():
                     master_config[key][k] = v
-            elif key == 'lgtm_add':
-                for k, v in value.items():
-                    if k in master_config[key]:
-                        master_config[key][k].extend(v)
-                    else:
-                        master_config[key][k] = v
             else:
                 master_config[key] = value
         return master_config
