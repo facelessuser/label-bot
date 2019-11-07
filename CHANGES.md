@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- **FIX**: Labels that were renamed are not always detected as renamed.
+
 ## 1.4.0
 
 - **NEW**: Add options `lgtm_add_issue` and `lgtm_add_pull_request` that are meant to replace `lgtm_add`. The old
