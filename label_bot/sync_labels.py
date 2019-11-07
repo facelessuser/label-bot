@@ -75,7 +75,12 @@ def _find_label(labels, label, label_color, label_description):
         # Editing an existing label
         if (
             label.lower() == old_name.lower() and
-            (label_color.lower() != color.lower() or label_description != description or label != old_name)
+            (
+                label_color.lower() != color.lower() or
+                label_description != description or
+                label != old_name or
+                label.lower() != new_name.lower()
+            )
         ):
             modified = True
         edit = LabelEdit(old_name, new_name, color, description, modified=modified)
