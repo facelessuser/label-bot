@@ -14,7 +14,7 @@ from . import sync_labels
 from . import triage_labels
 from . import commands
 from . import util
-__version__ = '1.3.1'
+__version__ = '1.4.1'
 
 router = routing.Router()
 routes = web.RouteTableDef()
