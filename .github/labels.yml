@@ -5,36 +5,37 @@ template: 'facelessuser:master-labels:labels.yml:master'
 brace_expansion: true
 
 rules:
-  - labels: [infrastructure]
+  - labels: ['C: infrastructure']
     patterns: ['*|.github/**|!README.md']
 
-  - labels: [source]
+  - labels: ['C: source']
     patterns: ['label_bot/**']
 
-  - labels: [docs]
+  - labels: ['C: docs']
     patterns: ['README.md']
 
-  - labels: [wip-labels]
+  - labels: ['C: wip-labels']
     patterns: ['label_bot/wip_labels.py']
 
-  - labels: [triage-labels]
+  - labels: ['C: triage-labels']
     patterns: ['label_bot/triage_labels.py']
 
-  - labels: [review-labels]
+  - labels: ['C: review-labels']
     patterns: ['label_bot/review_labels.py']
 
-  - labels: [wildcard-labels]
+  - labels: ['C: wildcard-labels']
     patterns: ['label_bot/wildcard_labels.py']
 
-  - labels: [sync-labels]
+  - labels: ['C: sync-labels']
     patterns: ['label_bot/sync_labels.py']
 
-  - labels: [lgtm-labels]
+  - labels: ['C: lgtm-labels']
     patterns: ['label_bot/lgtm_labels.py']
 
-  - labels: [add-remove-labels]
+  - labels: ['C: add-remove-labels']
     patterns: ['label_bot/add_remove_labels.py']
 
+# Label management
 
 ignores:
   - dependencies
@@ -42,30 +43,37 @@ ignores:
 
 
 labels:
-- name: sync-labels
+- name: 'C: sync-labels'
+  renamed: sync-labels
   color: subcategory
   description: Sync labels library.
 
-- name: lgtm-labels
+- name: 'C: lgtm-labels'
+  renamed: lgtm-labels
   color: subcategory
   description: LGTM labels library.
 
-- name: add-remove-labels
+- name: 'C: add-remove-labels'
+  renamed: add-remove-labels
   color: subcategory
   description: Add/remove labels library.
 
-- name: wip-labels
+- name: 'C: wip-labels'
+  renamed: wip-labels
   color: subcategory
   description: WIP labels library.
 
-- name: triage-labels
+- name: 'C: triage-labels'
+  renamed: triage-labels
   color: subcategory
   description: Triage label library.
 
-- name: review-labels
+- name: 'C: review-labels'
+  renamed: review-labels
   color: subcategory
   description: Review label library.
 
-- name: wildcard-labels
+- name: 'C: wildcard-labels'
+  renamed: wildcard-labels
   color: subcategory
   description: Wildcard labels library.
