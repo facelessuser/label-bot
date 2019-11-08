@@ -37,10 +37,11 @@ EVT_PENDING = "pending"
 class Event:
     """Event object."""
 
-    def __init__(self, event_type, data):
+    def __init__(self, event_type, data, local_ref=False):
         """Initialize."""
 
         self.event = event_type
+        self.local_ref = local_ref
         if self.event == 'push':
             self.sha = data['after']
             self.state = None
@@ -111,7 +112,7 @@ class Event:
                 self.contents_url,
                 {
                     'path': '.github/labels.yml',
-                    'ref': self.sha
+                    'ref': self.sha if self.local_ref else 'master'
                 }
             )
             content = base64.b64decode(result['content']).decode('utf-8')

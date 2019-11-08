@@ -52,15 +52,9 @@ available bot on the marketplace.
 
 ## Which Configuration Gets Used?
 
-[Sync](#sync) commands, which occur on pushes to master and via `@bot sync labels` commands in pull request and issues,
-are always run using the configuration file on `master`.
-
-For issues, the configuration on master gets used as there is no configuration associated with an issue.
-
-For pull requests, the configuration file in the pull gets used except when issuing a [sync](#sync) command.
-
-All commands issued in the body of a pull request, issue, or comment in an issue or pull request are restricted to
-owners and collaborators.
+All commands are run from the configuration file found on `master`. The only time a local reference would be used to
+acquire a configuration is in a pull request when the `retrigger-local` command is used. `retrigger-local` is only meant
+for testing a pull request.
 
 ## Using a Configuration Template
 
@@ -350,6 +344,9 @@ If you want to rerun all checks, you can ask it to run `all`:
 
 Available checks that can be retriggered are: `wip`, `review`, `triage`, and `auto-label`. `triage` cannot be run in
 pull requests, and the other are not run outside of pull requests.
+
+In a pull request, you can force the SHA in the pull request to be used to obtain the configuration file for testing
+label changes by using `retrigger-local` instead of `retrigger`. This is meant only for testing.
 
 ### Sync
 

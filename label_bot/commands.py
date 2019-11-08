@@ -24,7 +24,7 @@ RE_COMMANDS = re.compile(
         (?P<lgtm>lgtm) |
         (?P<add>add(?P<add_key>[ ]*[^\s,][^\r\n\t\v,]*(?:[ ]*,[ ]*[^\s,][^\r\n\t\v,]*)*)) |
         (?P<remove>remove(?P<remove_key>[ ]*[^\s,][^\r\n\t\v,]*(?:[ ]*,[ ]*[^\s,][^\r\n\t\v,]*)*)) |
-        (?P<retrigger>retrigger[ ]+(?P<retrigger_task>auto-labels|wip|review|triage|all)) |
+        (?P<retrigger>retrigger(?P<local>-local)?[ ]+(?P<retrigger_task>auto-labels|wip|review|triage|all)) |
         (?P<sync>sync[ ]+labels)
     )\b
     ''',
@@ -52,7 +52,7 @@ async def get_issue_payload(gh, event):
     return event_type, payload
 
 
-async def command_retrigger(event, action, gh):
+async def command_retrigger(event, action, gh, local_ref=False):
     """Handle retrigger command."""
 
     # These events shouldn't be run on a closed issue.
@@ -62,15 +62,17 @@ async def command_retrigger(event, action, gh):
     event_type, payload = await get_issue_payload(gh, event)
 
     if action in ('triage', 'all') and event_type == 'issues':
-        command = Command(triage_labels.run, util.Event(event_type, payload), None, False, {})
+        command = Command(triage_labels.run, util.Event(event_type, payload, local_ref), None, False, {})
     elif action == 'all' and event_type == 'pull_request':
-        command = Command(run_all_pull_actions, util.Event(event_type, payload), None, False, {})
+        command = Command(run_all_pull_actions, util.Event(event_type, payload, local_ref), None, False, {})
     elif action == 'review' and event_type == 'pull_request':
-        command = Command(review_labels.run, util.Event(event_type, payload), None, False, {})
+        command = Command(review_labels.run, util.Event(event_type, payload, local_ref), None, False, {})
     elif action == 'wip' and event_type == 'pull_request':
-        command = Command(wip_labels.run, util.Event(event_type, payload), None, True, {})
+        command = Command(wip_labels.run, util.Event(event_type, payload, local_ref), None, True, {})
     elif action == 'auto-labels' and event_type == 'pull_request':
-        command = Command(wildcard_labels.run, util.Event(event_type, payload), wildcard_labels.pending, True, {})
+        command = Command(
+            wildcard_labels.run, util.Event(event_type, payload, local_ref), wildcard_labels.pending, True, {}
+        )
     else:
         command = None
     return command
@@ -184,7 +186,7 @@ async def run(event, gh, bot):
             continue
 
         if etype == 'comment' and m.group('retrigger'):
-            cmd = await command_retrigger(event, m.group('retrigger_task'), gh)
+            cmd = await command_retrigger(event, m.group('retrigger_task'), gh, local_ref=bool(m.group('local')))
 
         elif m.group('sync'):
             cmd = await command_sync(event, gh)

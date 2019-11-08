@@ -1,7 +1,11 @@
 # Changelog
 
-## 1.4.1
+## 1.5.0
 
+- **NEW**: New command added called `retrigger-local` which will force a pull request retrigger to use the configuration
+  in the pull request reference instead of using `master`. This is great if you want to test changes to the label
+  configuration in a pull request.
+- **NEW**: Configuration file is always read from `master` except when `retrigger-local` is run in a pull request.
 - **FIX**: Labels that were renamed are not always detected as renamed.
 - **FIX**: Better logic to avoid adding a label that already exists or removing a label that does not exist. Also,
   detect such failures if we do run into such scenarios, and don't fail the sync.
