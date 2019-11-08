@@ -5,7 +5,7 @@ import yaml
 import traceback
 import sys
 import os
-from gidgethub import sansio
+from gidgethub import sansio, InvalidField
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -173,30 +173,45 @@ class Event:
     async def update_repo_label(self, gh, old_name, new_name, color, description):
         """Update the repository label."""
 
-        await gh.patch(
-            self.labels_url,
-            {'name': old_name},
-            data={'new_name': new_name, 'color': color, 'description': description},
-            accept=LABEL_HEADER
-        )
+        try:
+            await gh.patch(
+                self.labels_url,
+                {'name': old_name},
+                data={'new_name': new_name, 'color': color, 'description': description},
+                accept=LABEL_HEADER
+            )
+        except InvalidField as e:
+            # Can occur if name already exists, ignore such errors
+            if "Validation Failed for 'name'" not in str(e):
+                raise
 
     async def remove_repo_label(self, gh, label):
         """Remove repository label."""
 
-        await gh.delete(
-            self.labels_url,
-            {'name': label},
-            accept=LABEL_HEADER
-        )
+        try:
+            await gh.delete(
+                self.labels_url,
+                {'name': label},
+                accept=LABEL_HEADER
+            )
+        except InvalidField as e:
+            # Likely to occur if name doesn't exists, ignore such errors
+            if "Validation Failed for 'name'" not in str(e):
+                raise
 
     async def add_repo_label(self, gh, name, color, description):
         """Add repository label."""
 
-        await gh.post(
-            self.labels_url,
-            data={'name': name, 'color': color, 'description': description},
-            accept=LABEL_HEADER
-        )
+        try:
+            await gh.post(
+                self.labels_url,
+                data={'name': name, 'color': color, 'description': description},
+                accept=LABEL_HEADER
+            )
+        except InvalidField as e:
+            # Can occur if name already exists, ignore such errors
+            if "Validation Failed for 'name'" not in str(e):
+                raise
 
     async def get_issue_labels(self, gh):
         """Get the issue's labels."""
