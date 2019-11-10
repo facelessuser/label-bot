@@ -27,7 +27,7 @@ async def triage(event, gh, config):
     """Add triage labels."""
 
     triage_label = config.get('triage_label', DEFAULT)
-    add_labels = {triage_label: triage_label.lower()}
+    add_labels = {triage_label.lower(): triage_label}
     remove_labels = {label.lower(): label for label in config.get('triage_remove', DEFAULT_REMOVE)}
     skip = set([label.lower() for label in config.get('triage_skip', DEFAULT_SKIP)])
 

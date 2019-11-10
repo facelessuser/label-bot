@@ -12,7 +12,7 @@ async def review(event, gh, config):
     """Add review labels."""
 
     review_label = config.get('review_label', DEFAULT)
-    add_labels = {review_label: review_label.lower()}
+    add_labels = {review_label.lower(): review_label}
     remove_labels = {label.lower(): label for label in config.get('review_remove', DEFAULT_REMOVE)}
     skip = set([label.lower() for label in config.get('review_skip', DEFAULT_SKIP)])
 
