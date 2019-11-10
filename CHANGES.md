@@ -9,6 +9,7 @@
 - **FIX**: Labels that were renamed are not always detected as renamed.
 - **FIX**: Better logic to avoid adding a label that already exists or removing a label that does not exist. Also,
   detect such failures if we do run into such scenarios, and don't fail the sync.
+- **FIX**: Case logic when comparing triage and review labels.
 
 ## 1.4.0
 
