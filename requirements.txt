@@ -114,9 +114,9 @@ uritemplate==3.0.0 \
     --hash=sha256:1b9c467a940ce9fb9f50df819e8ddd14696f89b9a8cc87ac77952ba416e0a8fd \
     --hash=sha256:c02643cebe23fc8adb5e6becffe201185bf06c40bda5c0b4028a93f1527d011d \
     # via gidgethub
-wcmatch==5.0 \
-    --hash=sha256:08567dbbdc7966a9bd86c05d16ef4ed035ebb8e283a28e989776d6817ff25010 \
-    --hash=sha256:1a5b3f0fb5af8e4afe5bfeff5b89fd5bf9b4b145bcb96047b30eb3b84ff083e0
+wcmatch==5.0.1 \
+    --hash=sha256:971dbaec573a24b709d56f09ceb4cdb53f44ccc8f3b90d0ceb9c5d0f83bd1190 \
+    --hash=sha256:e51c605032f203431ebdbd576e899edae172ae3d7880ad74477a3c3109d0a7fa
 yarl==1.3.0 \
     --hash=sha256:024ecdc12bc02b321bc66b41327f930d1c2c543fa9a561b39861da9388ba7aa9 \
     --hash=sha256:2f3010703295fbe1aec51023740871e64bb9664c789cba5a6bdf404e93f7568f \
