@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0
+
+- **NEW**: Bot should allow `add` and `remove` commands in issue comments to modify labels even if the issue is closed.
+
 ## 1.5.0
 
 - **NEW**: New command added called `retrigger-local` which will force a pull request retrigger to use the configuration
