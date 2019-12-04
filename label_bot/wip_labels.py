@@ -18,6 +18,8 @@ async def wip(event, gh, config):
             wip = True
             break
 
+    print('WIP: ', str(wip))
+
     await event.set_status(
         gh,
         util.EVT_PENDING if wip else util.EVT_SUCCESS,
@@ -28,6 +30,8 @@ async def wip(event, gh, config):
 
 async def run(event, gh, config, **kwargs):
     """Run task."""
+
+    print(f'WIP: {event.full_name}')
 
     try:
         if config.get('error', ''):

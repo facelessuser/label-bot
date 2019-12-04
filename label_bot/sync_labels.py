@@ -143,28 +143,28 @@ async def sync(event, gh, config):
         if edit is not None and edit.modified:
             already_exists = edit.old.lower() != edit.new.lower() and edit.new.lower() in current_names
             if already_exists and delete:
-                print(f'    Deleting {label["name"]}: #{label["color"]} "{label["description"]}"')
+                print(f'SYNC: Deleting {label["name"]}: #{label["color"]} "{label["description"]}"')
                 await event.remove_repo_label(gh, edit.old)
                 current_names.remove(edit.old.lower())
                 await asyncio.sleep(1)
             elif not already_exists:
-                print(f'    Updating {edit.new}: #{edit.color} "{edit.description}"')
+                print(f'SYNC: Updating {edit.new}: #{edit.color} "{edit.description}"')
                 await event.update_repo_label(gh, edit.old, edit.new, edit.color, edit.description)
                 current_names.remove(edit.old.lower())
                 current_names.add(edit.new.lower())
                 await asyncio.sleep(1)
             else:
-                print(f'    Skipping {label["name"]}: #{label["color"]} "{label["description"]}"')
+                print(f'SYNC: Skipping {label["name"]}: #{label["color"]} "{label["description"]}"')
             evaluated.add(edit.old.lower())
             evaluated.add(edit.new.lower())
         else:
             if edit is None and delete and label['name'].lower() not in ignores:
-                print(f'    Deleting {label["name"]}: #{label["color"]} "{label["description"]}"')
+                print(f'SYNC: Deleting {label["name"]}: #{label["color"]} "{label["description"]}"')
                 await event.remove_repo_label(gh, label['name'])
                 current_names.remove(label['name'].lower())
                 await asyncio.sleep(1)
             else:
-                print(f'    Skipping {label["name"]}: #{label["color"]} "{label["description"]}"')
+                print(f'SYNC: Skipping {label["name"]}: #{label["color"]} "{label["description"]}"')
             evaluated.add(label['name'].lower())
 
     # Create any labels that need creation.
@@ -175,7 +175,7 @@ async def sync(event, gh, config):
 
         # If the name has already been evaluated, we've likely already added the name or removed it intentionally.
         if name.lower() not in evaluated:
-            print(f'    Creating {name}: #{color} "{description}"')
+            print(f'SYNC: Creating {name}: #{color} "{description}"')
             await event.add_repo_label(gh, name, color, description)
             await asyncio.sleep(1)
 
@@ -188,6 +188,8 @@ async def pending(event, gh):
 
 async def run(event, gh, config, **kwargs):
     """Run task."""
+
+    print(f'SYNC: {event.full_name}')
 
     try:
         if config.get('error', ''):

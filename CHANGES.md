@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.7.0
+
+- **NEW**: More logging and specify which module is logging along with repository/user where the request originated
+  from.
+
 ## 1.6.0
 
 - **NEW**: Bot should allow `add` and `remove` commands in issue comments to modify labels even if the issue is closed.

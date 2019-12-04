@@ -63,6 +63,7 @@ class Event:
             self.base = None
             self.head = None
             self.number = str(data['issue']['number'])
+        self.full_name = data['repository']['full_name']
         self.branches_url = data['repository']['branches_url']
         self.issues_url = data['repository']['issues_url']
         self.issues_comments_url = self.issues_url + '/comments'

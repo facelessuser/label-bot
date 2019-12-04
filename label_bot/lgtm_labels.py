@@ -6,6 +6,8 @@ import sys
 async def run(event, gh, config):
     """Run the task."""
 
+    print(f'LGTM: {event.full_name}')
+
     try:
         if config.get('error', ''):
             raise Exception(config['error'])
@@ -37,6 +39,9 @@ async def lgtm(event, gh, config, **kwargs):
             remove.append(remove_labels[low])
 
     add = [x for x in add_labels.values()]
+
+    print('LGTM: Removing: ', str(remove))
+    print('LGTM: Adding: ', str(add))
 
     await event.remove_issue_labels(gh, remove)
     await event.add_issue_labels(gh, add)
