@@ -10,6 +10,8 @@ DEFAULT_REMOVE = []
 async def run(event, gh, config, **kwargs):
     """Run task."""
 
+    print(f'TRIAGE: {event.full_name}')
+
     try:
         if config.get('error', ''):
             raise Exception(config['error'])
@@ -48,6 +50,9 @@ async def triage(event, gh, config):
             remove.append(remove_labels[low])
 
     add = [x for x in add_labels.values()]
+
+    print('TRIAGE: Removing: ', str(remove))
+    print('TRIAGE: Adding: ', str(add))
 
     await event.remove_issue_labels(gh, remove)
     await event.add_issue_labels(gh, add)

@@ -14,7 +14,7 @@ from . import sync_labels
 from . import triage_labels
 from . import commands
 from . import util
-__version__ = '1.6.0'
+__version__ = '1.7.0'
 
 router = routing.Router()
 routes = web.RouteTableDef()
@@ -176,5 +176,7 @@ if __name__ == "__main__":
     port = os.environ.get("PORT")
     if port is not None:
         port = int(port)
+
+    print(f'==== Starting Label Bot {__version__} ====')
 
     web.run_app(app, port=port)

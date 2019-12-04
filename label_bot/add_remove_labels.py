@@ -6,6 +6,8 @@ import sys
 async def run(event, gh, config, labels=None, remove=False, **kwargs):
     """Run the task."""
 
+    print(f'ADD/REMOVE: {event.full_name}')
+
     try:
         if config.get('error', ''):
             raise Exception(config['error'])
@@ -55,6 +57,11 @@ async def add_remove(event, gh, config, labels, remove_mode):
 
     if not remove_mode:
         add = [x for x in labels.values()]
+
+    if not remove_mode:
+        print('ADD/REMOVE: Adding: ', str(add))
+    else:
+        print('ADD/REMOVE: Removing: ', str(remove))
 
     await event.remove_issue_labels(gh, remove)
     await event.add_issue_labels(gh, add)

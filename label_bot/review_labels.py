@@ -34,12 +34,17 @@ async def review(event, gh, config):
 
     add = [x for x in add_labels.values()]
 
+    print('REVIEW: Removing: ', str(remove))
+    print('REVIEW: Adding: ', str(add))
+
     await event.remove_issue_labels(gh, remove)
     await event.add_issue_labels(gh, add)
 
 
 async def run(event, gh, config, **kwargs):
     """Run the task."""
+
+    print(f'REVIEW: {event.full_name}')
 
     try:
         if config.get('error', ''):

@@ -99,6 +99,9 @@ async def update_issue_labels(event, gh, add_labels, remove_labels):
 
     add = [label for label in add_labels.values()]
 
+    print('WILDCARD: Removing: ', str(remove))
+    print('WILDCARD: Adding: ', str(add))
+
     await event.add_issue_labels(gh, add)
     await event.remove_issue_labels(gh, remove)
 
@@ -111,6 +114,8 @@ async def pending(event, gh):
 
 async def run(event, gh, config, **kwargs):
     """Run task."""
+
+    print(f'WILDCARD: {event.full_name}')
 
     try:
         if config.get('error', ''):

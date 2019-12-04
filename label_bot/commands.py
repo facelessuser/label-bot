@@ -163,6 +163,8 @@ async def react_to_command(event, gh):
 async def run(event, gh, bot):
     """Handle commands."""
 
+    print(f'COMMAND: {event.data["repository"]["full_name"]}')
+
     reacted = False
 
     etype = EVENT_MAP[event.event]
@@ -181,24 +183,31 @@ async def run(event, gh, bot):
 
         if etype == 'comment' and m.group('retrigger'):
             cmd = await command_retrigger(event, m.group('retrigger_task'), gh, local_ref=bool(m.group('local')))
+            c_type = f'retrigger {m.group("retrigger_task")}'
 
         elif m.group('sync'):
             cmd = await command_sync(event, gh)
+            c_type = 'sync'
 
         elif m.group('lgtm'):
             cmd = await command_lgtm(event, gh)
+            c_type = 'lgtm'
 
         elif m.group('add'):
             cmd = await command_add_remove(event, gh, m.group('add_key'))
+            c_type = 'add'
 
         elif m.group('remove'):
             cmd = await command_add_remove(event, gh, m.group('remove_key'), remove=True)
+            c_type = 'remove'
 
         else:
             continue
 
         if cmd is None:
             continue
+        else:
+            print(f'COMMAND: found "{c_type}"')
 
         if not reacted:
             await react_to_command(event, gh)
