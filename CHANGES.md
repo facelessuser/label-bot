@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0
+
+_ **NEW**: Update to latest `gidgethub`, `pyyaml`, and `beautifulsoup4`.
+
 ## 1.7.0
 
 - **NEW**: More logging and specify which module is logging along with repository/user where the request originated
