@@ -46,9 +46,9 @@ chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
     # via aiohttp
-gidgethub==3.2.0 \
-    --hash=sha256:4f1a4cd8ea73ee44245fa510f01ce602cd328745bf83a3342d08d168a604f4c6 \
-    --hash=sha256:8f4b69063a256994d38243cc0eba4e1453017b5b8b04a173216d02d47ffc3989
+gidgethub==3.3.0 \
+    --hash=sha256:3692d2df48a23c87ec4a5e74053ce343bc59cea7c34488a9136754a35aeb177a \
+    --hash=sha256:4a456758a5fc8bfd581f297df90f2d09efbb830ccd209b1ceba4723705607d70
 idna-ssl==1.1.0 \
     --hash=sha256:a933e3bb13da54383f9e8f35dc4f9cb9eb9b3b78c6b36f311254d6d0d92c6c7c \
     # via aiohttp
