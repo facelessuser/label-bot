@@ -3,6 +3,7 @@
 ## 1.8.0
 
 _ **NEW**: Update to latest `gidgethub`, `pyyaml`, and `beautifulsoup4`.
+- **NEW**: Add environment variable `GH_BOT_LINK` to specify the link for when status is clicked.
 
 ## 1.7.0
 
