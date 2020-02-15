@@ -147,7 +147,7 @@ class Event:
             {'sha': self.sha},
             data={
                 "state": status,
-                "target_url": "https://github.com/gir-bot/label-bot",
+                "target_url": f'{os.environ.get("GH_BOT_LINK", "https://github.com/facelessuser/label-bot")}',
                 "description": msg,
                 "context": f'{os.environ.get("GH_BOT")}/{context}'
             }
