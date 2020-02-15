@@ -36,7 +36,9 @@ available bot on the marketplace.
 2. Also make sure you set `GH_AUTH` variable which is the access token by which the bot user is authenticated.
    Normally `repo` privileges are sufficient. Learn how to setup an [access token][access] by checking out the
    documentation.
-3. Setup a webhook in your repository. Point the URL to your running app. Ensure it sends data via JSON. Use a
+3. Optionally, set up `GH_BOT_LINK` which will link to whatever you specify when you click the "details" associated
+   with the status of the CI event.
+4. Setup a webhook in your repository. Point the URL to your running app. Ensure it sends data via JSON. Use a
    token with high entropy and make sure it is used by your webhook, but also assigned to `GH_SECRET` in your app's
    environmental variables. Lastly, make sure the webhook sends requests for:
 
