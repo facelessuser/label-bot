@@ -142,6 +142,7 @@ class Event:
     async def set_status(self, gh, status, context, msg):
         """Set status."""
 
+        print(os.environ.get("GH_BOT_LINK", "https://github.com/facelessuser/label-bot"))
         await gh.post(
             self.statuses_url,
             {'sha': self.sha},
