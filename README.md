@@ -1,3 +1,4 @@
+[![Discord][discord-image]][discord-link]
 [![Build][github-ci-image]][github-ci-link]
 ![License][license-image-mit]
 # Label Bot
@@ -402,6 +403,8 @@ Then when we run `@bot lgtm`, `needs-review` will be removed, and `approved` wil
 You can add or remove labels with the commands `@bot add label-name` or `@bot remove label-name`. You can specify
 multiple labels by separating them with comas: `@bot add Documents, Core Code`.
 
-[license-image-mit]: https://img.shields.io/badge/license-MIT-blue.svg
+[discord-image]: https://img.shields.io/discord/678289859768745989?logo=discord&logoColor=aaaaaa&color=mediumpurple&labelColor=333333
+[discord-link]:https://discord.gg/AsDnNrj
+[license-image-mit]: https://img.shields.io/badge/license-MIT-blue.svg?labelColor=333333
 [github-ci-image]: https://github.com/gir-bot/label-bot/workflows/build/badge.svg
 [github-ci-link]: https://github.com/gir-bot/label-bot/actions?workflow=build
