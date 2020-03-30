@@ -50,9 +50,9 @@ chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
     --hash=sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691 \
     # via aiohttp
-gidgethub==3.3.0 \
-    --hash=sha256:3692d2df48a23c87ec4a5e74053ce343bc59cea7c34488a9136754a35aeb177a \
-    --hash=sha256:4a456758a5fc8bfd581f297df90f2d09efbb830ccd209b1ceba4723705607d70 \
+gidgethub==4.0.0 \
+    --hash=sha256:965a028f767f08743de241cf93cfaf0a99eac85c6d3219d277d51738c964ff91 \
+    --hash=sha256:b96132da05ef059eaf6a148878f0c05a4cd720573ba5c3d2144bae7e4e7fb0f0 \
     # via -r requirements.in
 idna-ssl==1.1.0 \
     --hash=sha256:a933e3bb13da54383f9e8f35dc4f9cb9eb9b3b78c6b36f311254d6d0d92c6c7c \
@@ -114,10 +114,9 @@ typing-extensions==3.7.4 \
     --hash=sha256:b1edbbf0652660e32ae780ac9433f4231e7339c7f9a8057d0f042fcbcea49b87 \
     --hash=sha256:d8179012ec2c620d3791ca6fe2bf7979d979acdbef1fca0bc56b37411db682ed \
     # via aiohttp
-uritemplate==3.0.0 \
-    --hash=sha256:01c69f4fe8ed503b2951bef85d996a9d22434d2431584b5b107b2981ff416fbd \
-    --hash=sha256:1b9c467a940ce9fb9f50df819e8ddd14696f89b9a8cc87ac77952ba416e0a8fd \
-    --hash=sha256:c02643cebe23fc8adb5e6becffe201185bf06c40bda5c0b4028a93f1527d011d \
+uritemplate==3.0.1 \
+    --hash=sha256:07620c3f3f8eed1f12600845892b0e036a2420acf513c53f7de0abd911a5894f \
+    --hash=sha256:5af8ad10cec94f215e3f48112de2022e1d5a37ed427fbd88652fa908f2ab7cae \
     # via gidgethub
 wcmatch==6.0 \
     --hash=sha256:501c21e25c65565ba5074286beb82cf8d889f13b471e0a45e99e0dfcbd5bd37f \
