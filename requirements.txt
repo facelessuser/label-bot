@@ -42,9 +42,9 @@ bracex==2.0 \
     --hash=sha256:1f22412845a7547fbc5d23761dc9c1c8e3ae2e9c6ecf928891e675b78ad69f4e \
     --hash=sha256:bcbedf0d658e28859ba49e64caf45c74eeea95df05f3ec8f87aa8d6d68252078 \
     # via wcmatch
-cachetools==4.0.0 \
-    --hash=sha256:9a52dd97a85f257f4e4127f15818e71a0c7899f121b34591fcc1173ea79a0198 \
-    --hash=sha256:b304586d357c43221856be51d73387f93e2a961598a9b6b6670664746f3b6c6c \
+cachetools==4.1.0 \
+    --hash=sha256:1d057645db16ca7fe1f3bd953558897603d6f0b9c51ed9d11eb4d071ec4e2aab \
+    --hash=sha256:de5d88f87781602201cde465d3afe837546663b168e8b39df67411b0bf10cefc \
     # via -r requirements.in
 chardet==3.0.4 \
     --hash=sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae \
