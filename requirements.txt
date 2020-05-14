@@ -33,10 +33,10 @@ attrs==19.3.0 \
 backrefs==4.2 \
     --hash=sha256:337ad4da8a367827f4969c1d44bc6e40dea3ae7dac67a4a0da6b662105f13b38 \
     # via wcmatch
-beautifulsoup4==4.8.2 \
-    --hash=sha256:05fd825eb01c290877657a56df4c6e4c311b3965bda790c613a3d6fb01a5462a \
-    --hash=sha256:9fbb4d6e48ecd30bcacc5b63b94088192dcda178513b2ae3c394229f8911b887 \
-    --hash=sha256:e1505eeed31b0f4ce2dbb3bc8eb256c04cc2b3b72af7d551a4ab6efd5cbe5dae \
+beautifulsoup4==4.9.0 \
+    --hash=sha256:594ca51a10d2b3443cbac41214e12dbb2a1cd57e1a7344659849e2e20ba6a8d8 \
+    --hash=sha256:a4bbe77fd30670455c5296242967a123ec28c37e9702a8a81bd2f20a4baf0368 \
+    --hash=sha256:d4e96ac9b0c3a6d3f0caae2e4124e6055c5dcafde8e2f831ff194c104f0775a0 \
     # via -r requirements.in
 bracex==2.0 \
     --hash=sha256:1f22412845a7547fbc5d23761dc9c1c8e3ae2e9c6ecf928891e675b78ad69f4e \
