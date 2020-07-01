@@ -199,7 +199,8 @@ There are three global flags that alter the default behavior of the glob pattern
 Flag                             | Description
 -------------------------------- | -----------
 [`brace_expansion`][brace]       | Allows Bash style brace expansion in patterns: `a{b,{c,d}}` → `ab ac ad`.
-[`extended_glob`][extglob]       | Enables Bash style extended glob patterns: `@(ab\|ac\|ad)`, etc. When this is enabled, the flag [`MINUSNEGATE`][minusnegate] is also enabled. `MINUSNEGATE` changes inverse patterns to use `-` instead of `!` to avoid conflicts with the extended glob patterns of `!(...)`.
+[`extended_glob`][extglob]       | Enables Bash style extended glob patterns: `@(ab\|ac\|ad)`, etc.
+[`minus_negate`][minusnegate].   | Enabled by default, [`MINUSNEGATE`][minusnegate] changes inverse patterns to use `-` instead of `!`. This was to avoid conflicts with the extended glob patterns of `!(...)`. This is no longer an issue. Simply escaping the bracket (`!\(`) will cause the pattern to be treated as an exclusion pattern instead of treating it as an [`EXTGLOB`][extglob], and not escaping the bracket (`!(`) will cause it to always be treated as an [`EXTGLOB`][extglob] pattern, even if it is not a valid [`EXTGLOB`][extglob].
 [`case_insensitive`][ignorecase] | As the action is run in a Linux environment, matches are case sensitive by default. This enables case insensitive matching.
 
 Global flags are placed at the top of the configuration file:

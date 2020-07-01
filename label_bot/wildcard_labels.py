@@ -12,7 +12,9 @@ def get_flags(config):
     if config.get('brace_expansion', False):
         flags |= glob.BRACE
     if config.get('extended_glob', False):
-        flags |= glob.EXTGLOB | glob.MINUSNEGATE
+        flags |= glob.EXTGLOB
+    if config.get('minus_negate', True):
+        flags |= glob.MINUSNEGATE
     if config.get('case_insensitive', False):
         flags |= glob.IGNORECASE
     return flags

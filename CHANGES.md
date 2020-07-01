@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0
+
+- **NEW**: Allow `minus_negate` logic to be disabled as there is no longer a conflict with `NEGATE` and `EXTGLOB`.
+
 ## 1.8.0
 
 - **NEW**: Update to latest `gidgethub`, `pyyaml`, and `beautifulsoup4`.
