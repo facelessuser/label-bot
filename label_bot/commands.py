@@ -170,7 +170,7 @@ async def run(event, gh, bot):
 
     etype = EVENT_MAP[event.event]
 
-    # Sometimes we are not able to get the message, maybe it isn't avaialbe yet?
+    # Sometimes we are not able to get the message, maybe it isn't available yet?
     # Attempt no more than three times. If we can't get it after that, raise issue.
     retry = 3
     url = event.data[etype]['url']
@@ -181,10 +181,10 @@ async def run(event, gh, bot):
         except gidgethub.BadRequest:
             retry -= 1
             if retry:
-                print(f"RETRY ({4 - retry}): Could not retrieve comments for {url}")
+                print(f"RETRY: ({4 - retry}) Could not retrieve comments for {url}")
                 await asyncio.sleep(3)
             else:
-                print(f'RETRY: Out of retries, cannot retrieve issue comments.')
+                print('RETRY: Out of retries, cannot retrieve issue comments.')
                 raise
 
     soup = BeautifulSoup(comment['body_html'], 'html.parser')
