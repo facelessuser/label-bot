@@ -11,6 +11,7 @@ from . import lgtm_labels
 from . import add_remove_labels
 from . import util
 from collections import namedtuple
+import gidgethub
 
 EVENT_MAP = {
     'issue_comment': 'comment',
@@ -168,7 +169,24 @@ async def run(event, gh, bot):
     reacted = False
 
     etype = EVENT_MAP[event.event]
-    comment = await gh.getitem(event.data[etype]['url'], accept=util.HTML_HEADER)
+
+    # Sometimes we are not able to get the message, maybe it isn't available yet?
+    # Attempt no more than three times. If we can't get it after that, raise issue.
+    retry = 3
+    url = event.data[etype]['url']
+    while retry:
+        try:
+            comment = await gh.getitem(url, accept=util.HTML_HEADER)
+            retry = 0
+        except gidgethub.BadRequest:
+            retry -= 1
+            if retry:
+                print(f"RETRY: ({4 - retry}) Could not retrieve comments for {url}")
+                await asyncio.sleep(3)
+            else:
+                print('RETRY: Out of retries, cannot retrieve issue comments.')
+                raise
+
     soup = BeautifulSoup(comment['body_html'], 'html.parser')
 
     for el in soup.select(f'a.user-mention:contains("@{bot}")[href$="/{bot}"]'):
