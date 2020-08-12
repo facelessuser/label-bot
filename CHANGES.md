@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.9.0 Development
+## 1.9.0
 
 - **NEW**: Allow `minus_negate` logic to be disabled as there is no longer a conflict with `NEGATE` and `EXTGLOB`.
 - **FIX**: When attempting to acquire comments in an issue, they may not be available yet. If at first we don't succeed,
