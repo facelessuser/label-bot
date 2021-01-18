@@ -8,7 +8,7 @@
 This is a GitHub app for performing label related actions in a repository. It is written by and used in projects for
 [@facelessuser](https://github.com/facelessuser). It uses the the persona of [@gir-bot](https://github.com/gir-bot), but
 can technically use any user. Label Bot is not a publicly available service, but can be modified and installed for
-personal use in Heroku or some other hosting service. Python 3.6+ is required.
+personal use in Heroku or some other hosting service. Currently running and tested on Python 3.9.1.
 
 Label bot handles a handful of label related scenarios:
 
