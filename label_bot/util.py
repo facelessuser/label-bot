@@ -57,12 +57,13 @@ class Event:
             self.head = data['pull_request']['head']['label']
             self.number = str(data['pull_request']['number'])
         elif self.event == 'issues':
-            self.sha = 'master'
+            self.sha = data["repository"]["default_branch"]
             self.state = data['issue']['state']
             self.labels = [self.decode_label(label['name']) for label in data['issue']['labels']]
             self.base = None
             self.head = None
             self.number = str(data['issue']['number'])
+        self.default_branch = data["repository"]["default_branch"]
         self.full_name = data['repository']['full_name']
         self.branches_url = data['repository']['branches_url']
         self.issues_url = data['repository']['issues_url']
@@ -113,7 +114,7 @@ class Event:
                 self.contents_url,
                 {
                     'path': '.github/labels.yml',
-                    'ref': self.sha if self.local_ref else 'master'
+                    'ref': self.sha if self.local_ref else self.default_branch
                 }
             )
             content = base64.b64decode(result['content']).decode('utf-8')

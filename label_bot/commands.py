@@ -84,7 +84,7 @@ async def command_sync(event, gh):
 
     await asyncio.sleep(1)
     event_type = 'push'
-    branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': 'master'})
+    branch = await gh.getitem(event.data['repository']['branches_url'], {'branch': event.data['default_branch']})
     payload = {'repository': event.data['repository'], 'after': branch['commit']['sha']}
     return Command(sync_labels.run, util.Event(event_type, payload), sync_labels.pending, False, {})
 
