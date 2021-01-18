@@ -14,7 +14,7 @@ from . import sync_labels
 from . import triage_labels
 from . import commands
 from . import util
-__version__ = '1.9.0'
+__version__ = '1.10.0'
 
 router = routing.Router()
 routes = web.RouteTableDef()
@@ -104,13 +104,16 @@ async def issues_open_events(event, gh, request, *args, **kwargs):
     await spawn(request, deferred_task(triage_labels.run, event))
 
 
-@router.register('push', ref='refs/heads/master')
+@router.register('push')
 async def push(event, gh, request, *args, **kwargs):
     """
     Handle push events on master.
 
     When pushing to master, we want to resync the labels with the latest config file.
     """
+
+    if 'refs/heads/' + event.data['repository']['default_branch'] != event.data['ref']:
+        return
 
     event = util.Event(event.event, event.data)
     await asyncio.sleep(1)

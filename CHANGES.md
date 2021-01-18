@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.0
+
+- **NEW**: Handle whatever the default branch is instead of assuming `master`.
+
 ## 1.9.0
 
 - **NEW**: Allow `minus_negate` logic to be disabled as there is no longer a conflict with `NEGATE` and `EXTGLOB`.
