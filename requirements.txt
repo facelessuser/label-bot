@@ -60,9 +60,9 @@ beautifulsoup4==4.9.3 \
     --hash=sha256:84729e322ad1d5b4d25f805bfa05b902dd96450f43842c4e99067d5e1369eb25 \
     --hash=sha256:fff47e031e34ec82bf17e00da8f592fe7de69aeea38be00523c04623c04fb666
     # via -r requirements.in
-bracex==2.0.1 \
-    --hash=sha256:1a279532492991ec66051d89367c705c6afaa8d838a2984dd2e12d78c2b86125 \
-    --hash=sha256:867fdf671c5546d1a296bc21e29c0015d379d011c0adc2e88555a2714bfecf86
+bracex==2.1.1 \
+    --hash=sha256:01f715cd0ed7a622ec8b32322e715813f7574de531f09b70f6f3b2c10f682425 \
+    --hash=sha256:64e2a6d14de9c8e022cf40539ac8468ba7c4b99550a2b05fc87fd20e392e568f
     # via wcmatch
 cachetools==4.2.1 \
     --hash=sha256:1d9d5f567be80f7c07d765e21b814326d78c61eb0c3a637dffc0e5d1796cb2e2 \
@@ -225,9 +225,9 @@ uritemplate==3.0.1 \
     --hash=sha256:07620c3f3f8eed1f12600845892b0e036a2420acf513c53f7de0abd911a5894f \
     --hash=sha256:5af8ad10cec94f215e3f48112de2022e1d5a37ed427fbd88652fa908f2ab7cae
     # via gidgethub
-wcmatch==8.0.1 \
-    --hash=sha256:00e0aeb50d283c523276e96cb4a94e083289256f72de4e9638affe970867ec3e \
-    --hash=sha256:bb36cd1944b5a79b69631a1a5fbb5bb79299032aa9ab683e60fe4db9747dc235
+wcmatch==8.1 \
+    --hash=sha256:4b2f5758d845d2cb391529f892201916cbb1c2ce10a447c7b7a57a2f4bb5647e \
+    --hash=sha256:7f5e260e98f2a12c6629e487bbd36bff50ba800e153f754cea4cac834b2c1ede
     # via -r requirements.in
 yarl==1.6.3 \
     --hash=sha256:00d7ad91b6583602eb9c1d085a2cf281ada267e9a197e8b7cae487dadbfa293e \
