@@ -126,9 +126,9 @@ cryptography==3.3.2 \
     --hash=sha256:c7390f9b2119b2b43160abb34f63277a638504ef8df99f11cb52c1fda66a2e6f \
     --hash=sha256:e18e6ab84dfb0ab997faf8cca25a86ff15dfea4027b986322026cc99e0a892da
     # via pyjwt
-gidgethub==5.0.0 \
-    --hash=sha256:8aea58a54889e3490804be917d1d5cfec4e81458cd85b34974834f96e5e697d3 \
-    --hash=sha256:a4a8d8b1ab629757b557d3bcb98a5a77790a3d00b320f5f881a1754cf0e21086
+gidgethub==5.0.1 \
+    --hash=sha256:3efbd6998600254ec7a2869318bd3ffde38edc3a0d37be0c14bc46b45947b682 \
+    --hash=sha256:67245e93eb0918b37df038148af675df43b62e832c529d7f859f6b90d9f3e70d
     # via -r requirements.in
 idna==3.1 \
     --hash=sha256:5205d03e7bcbb919cc9c19885f9920d622ca52448306f2377daede5cf3faac16 \
