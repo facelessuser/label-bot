@@ -1,0 +1,14 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: wcmatch
+    versions:
+    - 8.1.1
+  - dependency-name: soupsieve
+    versions:
+    - "2.2"
