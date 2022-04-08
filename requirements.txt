@@ -55,9 +55,9 @@ attrs==20.3.0 \
     --hash=sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6 \
     --hash=sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700
     # via aiohttp
-beautifulsoup4==4.10.0 \
-    --hash=sha256:9a315ce70049920ea4572a4055bc4bd700c940521d36fc858205ad4fcde149bf \
-    --hash=sha256:c23ad23c521d818955a4151a67d81580319d4bf548d3d49f4223ae041ff98891
+beautifulsoup4==4.11.1 \
+    --hash=sha256:58d5c3d29f5a36ffeb94f02f0d786cd53014cf9b3b3951d42e0080d8a9498d30 \
+    --hash=sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693
     # via -r requirements.in
 bracex==2.1.1 \
     --hash=sha256:01f715cd0ed7a622ec8b32322e715813f7574de531f09b70f6f3b2c10f682425 \
