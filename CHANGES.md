@@ -3,6 +3,7 @@
 ## 1.10.0
 
 - **NEW**: Handle whatever the default branch is instead of assuming `master`.
+- **NEW**: Update dependencies.
 
 ## 1.9.0
 
